@@ -1,22 +1,28 @@
 "use client";
 
 import React from "react";
-import { Input } from "../ui/input";
-import { Button } from "../ui/button";
-import { BedDouble, Search, Users } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import {
+  BedDouble,
+  ChevronsLeft,
+  ChevronsRight,
+  Search,
+  Users,
+} from "lucide-react";
 import Link from "next/link";
-import { Card } from "../ui/card";
+import { Card } from "@/components/ui/card";
 import { formatCurrency } from "@/lib/format";
 import {
   Pagination,
   PaginationContent,
-  PaginationEllipsis,
   PaginationItem,
   PaginationLink,
   PaginationNext,
   PaginationPrevious,
-} from "../ui/pagination";
+} from "@/components/ui/pagination";
 import { HotelListResponse } from "@/app/(protected)/home/types";
+import { parseAsInteger, useQueryState } from "nuqs";
 
 interface HotelResultsProps {
   promise: Promise<HotelListResponse>;
@@ -27,7 +33,7 @@ const HotelResults = ({ promise }: HotelResultsProps) => {
   return (
     <section className="grid auto-rows-min grid-cols-1 gap-4 sm:grid-cols-2 md:col-span-3 lg:grid-cols-3">
       <SearchByName />
-      <HotelList hotels={hotelsData.data} />
+      <HotelList hotels={hotelsData.data} pageCount={hotelsData.pageCount} />
     </section>
   );
 };
@@ -46,36 +52,91 @@ const SearchByName = () => {
 
 interface HotelListProps {
   hotels: HotelListResponse["data"];
+  pageCount: HotelListResponse["pageCount"];
 }
 
-const HotelList = ({ hotels }: HotelListProps) => {
+const HotelList = ({ hotels, pageCount }: HotelListProps) => {
+  const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
+
+  const handleFirst = () => {
+    if (page > 1) setPage(1);
+  };
+
+  const handlePrev = () => {
+    if (page > 1) setPage(page - 1);
+  };
+  const handleNext = () => {
+    if (page < pageCount) setPage(page + 1);
+  };
+
+  const handleLast = () => {
+    if (page < pageCount) setPage(pageCount);
+  };
+
   return (
     <>
       {hotels.map((hotel) => (
         <HotelCard key={hotel.id} hotel={hotel} />
       ))}
-      <div className="col-span-full mt-8">
+      <div className="col-span-full">
         <Pagination>
           <PaginationContent>
             <PaginationItem>
-              <PaginationPrevious href="#" />
+              <Button
+                aria-label="Go to first page"
+                variant="ghost"
+                size="icon"
+                className="hidden size-8 lg:flex"
+                disabled={page <= 1}
+                onClick={() => {
+                  handleFirst();
+                }}
+              >
+                <ChevronsLeft />
+              </Button>
             </PaginationItem>
             <PaginationItem>
-              <PaginationLink href="#">1</PaginationLink>
+              <PaginationPrevious
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handlePrev();
+                }}
+                aria-disabled={page <= 1}
+                className={page <= 1 ? "pointer-events-none opacity-50" : ""}
+              />
             </PaginationItem>
             <PaginationItem>
               <PaginationLink href="#" isActive>
-                2
+                {page}
               </PaginationLink>
             </PaginationItem>
             <PaginationItem>
-              <PaginationLink href="#">3</PaginationLink>
+              <PaginationNext
+                href="#"
+                onClick={(e) => {
+                  e.preventDefault();
+                  handleNext();
+                }}
+                aria-disabled={page >= pageCount}
+                className={
+                  page >= pageCount ? "pointer-events-none opacity-50" : ""
+                }
+              />
             </PaginationItem>
             <PaginationItem>
-              <PaginationEllipsis />
-            </PaginationItem>
-            <PaginationItem>
-              <PaginationNext href="#" />
+              <Button
+                aria-label="Go to first page"
+                variant="ghost"
+                size="icon"
+                className="hidden size-8 lg:flex"
+                disabled={page >= pageCount}
+                onClick={() => {
+                  handleLast();
+                }}
+              >
+                <ChevronsRight />
+              </Button>
             </PaginationItem>
           </PaginationContent>
         </Pagination>

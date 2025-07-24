@@ -72,20 +72,18 @@ export function ContactDetailsSection({
         <div className="text-center py-8 text-muted-foreground">
           <p>No guests added yet.</p>
           <p className="text-sm">
-            Click "Add Guest" to start adding contact details.
+            Click &quot;Add Guest&quot; to start adding contact details.
           </p>
         </div>
       ) : (
-        <ContactDetailsTable
-          data={initialGuests}
-        />
+        <ContactDetailsTable data={initialGuests} />
       )}
 
       <SelectUserDialog
         open={isDialogOpen}
         onOpenChange={setIsDialogOpen}
         users={mockUsers}
-        selectedUsers={mockUsers}
+        selectedUsers={[]}
       />
     </div>
   );

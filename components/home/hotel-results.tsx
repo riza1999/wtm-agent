@@ -29,11 +29,12 @@ interface HotelResultsProps {
 }
 
 const HotelResults = ({ promise }: HotelResultsProps) => {
-  const hotelsData = React.use(promise);
   return (
     <section className="grid auto-rows-min grid-cols-1 gap-4 sm:grid-cols-2 md:col-span-3 lg:grid-cols-3">
       <SearchByName />
-      <HotelList hotels={hotelsData.data} pageCount={hotelsData.pageCount} />
+      <React.Suspense fallback="Loading...">
+        <HotelList promise={promise} />
+      </React.Suspense>
     </section>
   );
 };
@@ -50,12 +51,12 @@ const SearchByName = () => {
   );
 };
 
-interface HotelListProps {
-  hotels: HotelListResponse["data"];
-  pageCount: HotelListResponse["pageCount"];
-}
+type HotelListProps = HotelResultsProps;
 
-const HotelList = ({ hotels, pageCount }: HotelListProps) => {
+const HotelList = ({ promise }: HotelListProps) => {
+  const hotelsData = React.use(promise);
+  const { data: hotels, pageCount } = hotelsData;
+
   const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
 
   const handleFirst = () => {

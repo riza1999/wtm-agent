@@ -1,4 +1,4 @@
-import { ContactDetail } from "./types";
+import { BookingDetail, ContactDetail } from "./types";
 
 export async function getContactDetails(): Promise<ContactDetail[]> {
   // Simulate API delay
@@ -24,8 +24,71 @@ export async function getContactDetails(): Promise<ContactDetail[]> {
   ];
 }
 
+export async function getBookingDetails(): Promise<BookingDetail[]> {
+  // Simulate API delay
+  await new Promise((resolve) => setTimeout(resolve, 800));
+
+  // Return dummy booking data for two hotels
+  return [
+    {
+      id: "booking-1",
+      hotelName: "Grand Luxury Hotel",
+      roomType: "Business King Room",
+      rating: 5,
+      imageSrc: "/hotel-detail/WTM Prototype.png",
+      checkIn: new Date("2025-02-15"),
+      checkOut: new Date("2025-02-16"),
+      checkInTime: "14.00 WIB",
+      checkOutTime: "Before 11.00 WIB",
+      cancellationPeriod: new Date("2025-02-15"),
+      rooms: [
+        {
+          id: "room-1",
+          name: "Business King Room",
+          quantity: 2,
+          price: 2800000,
+          includes: ["Breakfast"],
+          features: ["Smoking Room"],
+        },
+      ],
+      additionalServices: [
+        {
+          id: "service-1",
+          name: "Additional Lunch",
+          price: 1000000,
+        },
+      ],
+      totalPrice: 3800000,
+    },
+    {
+      id: "booking-2",
+      hotelName: "Seaside Resort",
+      roomType: "Deluxe Ocean View",
+      rating: 4,
+      imageSrc: "/hotel-detail/WTM Prototype.png",
+      checkIn: new Date("2025-03-10"),
+      checkOut: new Date("2025-03-12"),
+      checkInTime: "15.00 WIB",
+      checkOutTime: "Before 12.00 WIB",
+      cancellationPeriod: new Date("2025-03-09"),
+      rooms: [
+        {
+          id: "room-2",
+          name: "Deluxe Ocean View",
+          quantity: 1,
+          price: 3500000,
+          includes: ["Breakfast", "Welcome Drink"],
+          features: ["Non-Smoking Room", "Sea View"],
+        },
+      ],
+      additionalServices: [],
+      totalPrice: 3500000,
+    },
+  ];
+}
+
 export async function saveContactDetails(
-  guests: ContactDetail[]
+  guests: ContactDetail[],
 ): Promise<{ success: boolean; message: string }> {
   // Simulate API delay
   await new Promise((resolve) => setTimeout(resolve, 800));

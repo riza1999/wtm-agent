@@ -1,13 +1,23 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import Link from "next/link";
 import { Logo } from "../logo";
 
-export const Footer = () => {
+interface FooterProps {
+  className?: string;
+}
+
+export const Footer = ({ className }: FooterProps) => {
   return (
     <footer>
       <nav className="z-20 mt-12 w-full border-t bg-[#2D2E33] py-2 text-white backdrop-blur-3xl">
-        <div className="mx-auto max-w-7xl px-6 transition-all duration-300">
+        <div
+          className={cn(
+            "mx-auto px-6 transition-all duration-300",
+            className || "max-w-7xl",
+          )}
+        >
           <div className="relative flex flex-wrap items-center justify-between gap-6 py-3 lg:gap-0 lg:py-4">
             {/* Left side - Logo */}
             <div className="flex w-full items-center justify-start lg:w-auto">

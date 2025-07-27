@@ -17,7 +17,7 @@ import { Card } from "../ui/card";
 
 export function RoomCard({ name, images, options, features }: RoomCardProps) {
   return (
-    <Card className="grid grid-cols-1 px-4 py-6 lg:grid-cols-10 lg:px-6">
+    <Card className="grid grid-cols-1 rounded px-4 py-6 lg:grid-cols-10 lg:px-6">
       <h2 className="col-span-full mb-4 text-xl font-bold lg:mb-0">{name}</h2>
       <RoomImageGallery images={images} />
       <div className="col-span-full mt-6 flex flex-col lg:col-span-6 lg:mt-0">
@@ -42,7 +42,7 @@ export function RoomCard({ name, images, options, features }: RoomCardProps) {
 function RoomImageGallery({ images }: { images: string[] }) {
   return (
     <div className="col-span-full grid grid-cols-3 gap-4 lg:col-span-4">
-      <div className="group relative col-span-3 aspect-[16/9] overflow-hidden rounded-lg">
+      <div className="group relative col-span-3 aspect-[16/9] overflow-hidden rounded">
         <Image
           alt="Room main image"
           src={images[0]}
@@ -54,7 +54,7 @@ function RoomImageGallery({ images }: { images: string[] }) {
       {images.slice(1, 4).map((image, index) => (
         <div
           key={index}
-          className="group relative col-span-1 aspect-square overflow-hidden rounded-lg"
+          className="group relative col-span-1 aspect-square overflow-hidden rounded"
         >
           <Image
             alt={`Room image ${index + 2}`}

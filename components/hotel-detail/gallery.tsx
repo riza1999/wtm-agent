@@ -12,7 +12,7 @@ function ImageItem({
 }) {
   return (
     <div
-      className={`group relative aspect-1/1 overflow-hidden rounded-lg ${className}`}
+      className={`group relative aspect-1/1 overflow-hidden rounded ${className}`}
     >
       <Image
         alt="Hotel image"
@@ -40,7 +40,7 @@ export function HotelGallery({
   const moreImage = images[showCount - 1];
 
   return (
-    <div className="grid grid-cols-1 gap-y-6 sm:grid-cols-4 sm:grid-rows-2 sm:gap-x-6 lg:gap-8">
+    <div className="grid grid-cols-1 gap-y-6 sm:grid-cols-4 sm:grid-rows-2 sm:gap-x-6 lg:gap-6">
       {/* Main image */}
       <ImageItem
         src={mainImage}

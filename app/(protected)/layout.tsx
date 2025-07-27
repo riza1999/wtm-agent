@@ -8,13 +8,13 @@ const DashboardLayout = ({
   children: React.ReactNode;
 }>) => {
   return (
-    <>
+    <div className="flex min-h-screen flex-col">
       <Header />
-      <main className="@container/main mx-auto max-w-7xl overflow-x-hidden px-6 pt-30 pb-12 transition-all duration-300">
+      <main className="@container/main mx-auto mb-4 w-full max-w-7xl flex-1 overflow-x-hidden px-6 pt-30 transition-all duration-300">
         {children}
       </main>
       <Footer />
-    </>
+    </div>
   );
 };
 

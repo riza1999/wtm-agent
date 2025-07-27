@@ -8,13 +8,13 @@ export default async function HotelDetailPage() {
   const hotel = await fetchHotelDetail();
 
   return (
-    <main className="flex flex-col gap-8 p-6 md:pt-0 md:p-12 bg-[#f6fdff] min-h-screen">
+    <div className="space-y-8">
       {/* Gallery Section */}
-      <section className="w-full max-w-6xl mx-auto">
+      <section>
         <HotelGallery images={hotel.images} />
       </section>
       {/* Info Section */}
-      <section className="w-full max-w-6xl mx-auto gap-8">
+      <section>
         <HotelInfo
           name={hotel.name}
           location={hotel.location}
@@ -28,15 +28,15 @@ export default async function HotelDetailPage() {
         />
       </section>
       {/* Room Card Section */}
-      <section className="w-full max-w-6xl mx-auto">
+      <section className="space-y-8">
         <Suspense fallback={<div>Loading room options...</div>}>
           {hotel.rooms.map((room, i) => (
-            <div key={i} className="mb-6">
+            <div key={i}>
               <RoomCard {...room} />
             </div>
           ))}
         </Suspense>
       </section>
-    </main>
+    </div>
   );
 }

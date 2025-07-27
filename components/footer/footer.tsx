@@ -6,7 +6,7 @@ import { Logo } from "../logo";
 export const Footer = () => {
   return (
     <footer>
-      <nav className="fixed bottom-0 z-20 w-full border-t bg-[#2D2E33] py-2 text-white backdrop-blur-3xl">
+      <nav className="z-20 mt-12 w-full border-t bg-[#2D2E33] py-2 text-white backdrop-blur-3xl">
         <div className="mx-auto max-w-7xl px-6 transition-all duration-300">
           <div className="relative flex flex-wrap items-center justify-between gap-6 py-3 lg:gap-0 lg:py-4">
             {/* Left side - Logo */}

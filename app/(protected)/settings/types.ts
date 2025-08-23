@@ -19,3 +19,12 @@ export interface AccountSettingResponse {
   success: boolean;
   message: string;
 }
+
+export interface LanguageChange {
+  language: string;
+}
+
+export interface FileUpload {
+  file: File;
+  type: "certificate" | "nameCard";
+}

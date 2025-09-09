@@ -232,7 +232,7 @@ function RoomOptions({
                 name={radioGroupName}
                 checked={selectedOption === index}
                 onChange={() => onOptionChange(index)}
-                className="h-4 w-4 cursor-pointer text-slate-800 focus:ring-slate-500"
+                className="accent-primary h-4 w-4 cursor-pointer text-slate-800 focus:ring-slate-500"
               />
               <div className="cursor-pointer">
                 <label

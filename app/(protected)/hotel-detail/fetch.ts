@@ -60,6 +60,18 @@ const mockHotel: HotelDetail = {
         { icon: "CigaretteOff", text: "Non Smoking" },
         { icon: "Bed", text: "King Size" },
       ],
+      additionals: [
+        {
+          id: "1",
+          label: "Lunch",
+          price: 100_000,
+        },
+        {
+          id: "2",
+          label: "Free Dinner",
+          price: 0,
+        },
+      ],
     },
     {
       name: "Business King Suite Smoking",

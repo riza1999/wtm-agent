@@ -32,7 +32,7 @@ export default async function HotelDetailPage() {
         <Suspense fallback={<div>Loading room options...</div>}>
           {hotel.rooms.map((room, i) => (
             <div key={i}>
-              <RoomCard {...room} />
+              <RoomCard {...room} hotelName={hotel.name} />
             </div>
           ))}
         </Suspense>

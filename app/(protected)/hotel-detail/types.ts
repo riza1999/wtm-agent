@@ -35,6 +35,7 @@ export interface HotelDetail {
 // =========================
 
 export interface Room {
+  additionals?: AdditionalService[]; // additional services available
   features: Feature[]; // room features with icon
   images: string[];
   name: string;
@@ -46,6 +47,12 @@ export interface RoomOption {
   label: string; // option label (e.g., 'Deluxe', 'Suite')
   originalPrice?: number; // price before discount
   price: number; // current price
+}
+
+export interface AdditionalService {
+  id: string;
+  label: string; // service name (e.g., 'Lunch', 'Dinner', 'Extra Bed')
+  price: number; // additional cost
 }
 
 // =========================
@@ -78,6 +85,7 @@ export interface HotelInfoProps {
 // =========================
 
 export interface RoomCardProps {
+  additionals?: AdditionalService[]; // additional services available
   features: Feature[];
   images: string[];
   name: string;

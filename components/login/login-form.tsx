@@ -15,40 +15,66 @@ import React from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 import z from "zod";
+import { signIn } from "next-auth/react";
 
 const loginSchema = z.object({
-  email: z.string().email("Please enter a valid email"),
+  username: z.string().min(1, "Please enter a valid username"),
   password: z.string().min(1, "Password is required"),
 });
 
-type LoginSchema = z.infer<typeof loginSchema>;
+export type LoginSchema = z.infer<typeof loginSchema>;
+
+type LoginFormProps = React.ComponentProps<"div"> & {
+  callbackUrl?: string;
+};
 
 export function LoginForm({
   className,
+  callbackUrl,
   ...props
-}: React.ComponentProps<"div">) {
+}: LoginFormProps) {
   const [isPending, startTransition] = React.useTransition();
   const router = useRouter();
 
+  const safeCallbackUrl = React.useMemo(() => {
+    if (!callbackUrl) return null;
+    const trimmed = callbackUrl.trim();
+
+    if (!trimmed.startsWith("/")) return null;
+    if (trimmed.startsWith("//")) return null;
+
+    return trimmed;
+  }, [callbackUrl]);
+
   const form = useForm<LoginSchema>({
     resolver: zodResolver(loginSchema),
-    defaultValues: { email: "", password: "" },
+    defaultValues: { username: "", password: "" },
   });
 
   function onSubmit(input: LoginSchema) {
     startTransition(async () => {
       try {
-        const formData = new FormData();
-        formData.append("email", input.email);
-        formData.append("password", input.password);
+        const result = await signIn("credentials", {
+          redirect: false,
+          username: input.username,
+          password: input.password,
+          callbackUrl: safeCallbackUrl ?? undefined,
+        });
 
-        const result = await loginAction(formData);
+        if (result?.error) {
+          const message =
+            result.error === "CredentialsSignin"
+              ? "Invalid username or password"
+              : result.error;
+          toast.error(message || "Login failed. Please try again.");
+          return;
+        }
 
-        if (result.success) {
-          toast.success(result.message || "Login successful");
-          router.push("/home");
+        if (result?.ok) {
+          toast.success("Login successful");
+          router.push(safeCallbackUrl ?? "/home");
         } else {
-          toast.error(result.message || "Login failed. Please try again.");
+          toast.error("Login failed. Please try again.");
         }
       } catch (err) {
         console.error("Login error:", err);
@@ -56,6 +82,28 @@ export function LoginForm({
       }
     });
   }
+
+  // function onSubmit(input: LoginSchema) {
+  //   startTransition(async () => {
+  //     try {
+  //       // const formData = new FormData();
+  //       // formData.append("email", input.username);
+  //       // formData.append("password", input.password);
+
+  //       const result = await loginAction(input);
+
+  //       if (result.success) {
+  //         toast.success(result.message || "Login successful");
+  //         router.push("/home");
+  //       } else {
+  //         toast.error(result.message || "Login failed. Please try again.");
+  //       }
+  //     } catch (err) {
+  //       console.error("Login error:", err);
+  //       toast.error("An error occurred. Please try again.");
+  //     }
+  //   });
+  // }
 
   return (
     <div className={cn("w-full max-w-md space-y-8", className)} {...props}>
@@ -72,18 +120,17 @@ export function LoginForm({
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <div className="space-y-4">
           <div>
-            <Label htmlFor="email">Email</Label>
+            <Label htmlFor="username">Username</Label>
             <Input
-              id="email"
-              type="email"
+              id="username"
               className="mt-1 bg-gray-200 text-black"
-              placeholder="m@example.com"
-              {...form.register("email")}
+              placeholder="Enter your username"
+              {...form.register("username")}
               disabled={isPending}
             />
-            {form.formState.errors.email && (
+            {form.formState.errors.username && (
               <p className="mt-1 text-sm text-red-600">
-                {form.formState.errors.email.message}
+                {form.formState.errors.username.message}
               </p>
             )}
           </div>

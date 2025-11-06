@@ -10,3 +10,15 @@ export type EmptyProps<T extends React.ElementType> = Omit<
 export interface SearchParams {
   [key: string]: string | string[] | undefined;
 }
+
+export type ApiResponse<TData> = {
+  status: number;
+  message: string;
+  data: TData;
+  pagination?: {
+    limit: number;
+    page: number;
+    total: number;
+    total_pages: number;
+  };
+};

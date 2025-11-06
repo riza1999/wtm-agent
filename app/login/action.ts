@@ -1,11 +1,18 @@
 "use server";
 
-export async function loginAction(formData: FormData) {
+import { LoginSchema } from "@/components/login/login-form";
+
+export async function loginAction(input: LoginSchema) {
   // Simulate API delay
   await new Promise((resolve) => setTimeout(resolve, 1000));
 
-  const email = formData.get("email") as string;
-  const password = formData.get("password") as string;
+  console.log({ input });
+
+  return {
+    success: false,
+    message: "Invalid email or password",
+    user: null,
+  };
 
   // Check if password is correct
   if (password === "abc123!@#") {

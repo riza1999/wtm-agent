@@ -3,8 +3,7 @@ import { z } from "zod";
 // Validation schema for register form
 export const registerSchema = z
   .object({
-    firstName: z.string().min(1, "First name is required"),
-    lastName: z.string().optional(),
+    fullName: z.string().min(1, "Full name is required"),
     agentCompany: z.string().optional(),
     email: z.string().email("Please enter a valid email"),
     phoneNumber: z.string().min(1, "Phone number is required"),
@@ -61,8 +60,7 @@ export interface RegisterResponse {
   user?: {
     id: string;
     email: string;
-    firstName: string;
-    lastName?: string;
+    fullName: string;
     username: string;
     phoneNumber: string;
     kakaoTalkId: string;

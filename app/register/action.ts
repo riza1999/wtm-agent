@@ -1,97 +1,56 @@
 "use server";
 
-import { registerSchema, type RegisterResponse } from "./type";
+import { apiCall } from "@/lib/api";
+import { type RegisterResponse } from "./type";
+import { revalidatePath } from "next/cache";
+import { ApiResponse } from "@/types";
+
+const AUTH_API_BASE_URL =
+  process.env.AUTH_API_BASE_URL ?? "http://54.255.206.242:4816/api";
 
 export async function registerAction(
   formData: FormData,
 ): Promise<RegisterResponse> {
   try {
-    // Simulate API delay
-    await new Promise((resolve) => setTimeout(resolve, 1000));
+    const data = Object.fromEntries(formData.entries());
 
-    // Extract form data
-    const firstName = formData.get("firstName") as string;
-    const lastName = formData.get("lastName") as string;
-    const agentCompany = formData.get("agentCompany") as string;
-    const email = formData.get("email") as string;
-    const phoneNumber = formData.get("phoneNumber") as string;
-    const username = formData.get("username") as string;
-    const kakaoTalkId = formData.get("kakaoTalkId") as string;
-    const password = formData.get("password") as string;
-    const confirmPassword = formData.get("confirmPassword") as string;
+    console.table({ data });
 
-    // Handle file uploads
-    const agentSelfiePhoto = formData.get("agentSelfiePhoto") as File;
-    const identityCard = formData.get("identityCard") as File;
-    const certificate = formData.get("certificate") as File | null;
-    const nameCard = formData.get("nameCard") as File;
-
-    // Validate the data
-    const validationResult = registerSchema.safeParse({
-      firstName,
-      lastName,
-      agentCompany,
-      email,
-      phoneNumber,
-      username,
-      kakaoTalkId,
-      password,
-      confirmPassword,
-      agentSelfiePhoto,
-      identityCard,
-      certificate: certificate || undefined,
-      nameCard,
+    const response = await fetch(`${AUTH_API_BASE_URL}/register`, {
+      method: "POST",
+      body: formData,
+      cache: "no-store",
     });
 
-    if (!validationResult.success) {
+    // const response = await apiCall("register", {
+    //   method: "POST",
+    //   body: formData,
+    // });
+
+    console.log({ response });
+
+    if (response.status !== 200) {
       return {
         success: false,
-        message: "Validation failed",
-        errors: validationResult.error.errors,
+        message: "Failed to register",
       };
     }
 
-    // Here you would typically:
-    // 1. Check if email/username already exists
-    // 2. Hash the password
-    // 3. Upload files to storage
-    // 4. Save user data to database
-    // 5. Send verification email
+    const apiResponse: ApiResponse<{ message: string; status: number }> =
+      await response.json();
 
-    // Simulate checking if user already exists
-    if (email === "existing@example.com") {
+    console.log({ apiResponse });
+
+    if (apiResponse.status !== 200) {
       return {
         success: false,
-        message: "User with this email already exists",
+        message: apiResponse.message || "Failed to register",
       };
     }
 
-    console.log({
-      id: "user_" + Date.now(),
-      email: email,
-      firstName: firstName,
-      lastName: lastName,
-      username: username,
-      phoneNumber: phoneNumber,
-      kakaoTalkId: kakaoTalkId,
-      agentCompany: agentCompany,
-    });
-
-    // Simulate successful registration
     return {
       success: true,
-      message:
-        "Registration successful! Please check your email for verification.",
-      user: {
-        id: "user_" + Date.now(),
-        email: email,
-        firstName: firstName,
-        lastName: lastName,
-        username: username,
-        phoneNumber: phoneNumber,
-        kakaoTalkId: kakaoTalkId,
-        agentCompany: agentCompany,
-      },
+      message: apiResponse.message || "Registration successful",
     };
   } catch (error) {
     console.error("Registration error:", error);

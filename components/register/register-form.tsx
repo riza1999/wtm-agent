@@ -8,7 +8,7 @@ import { Label } from "@/components/ui/label";
 import { PasswordInput } from "@/components/ui/password-input";
 import { cn } from "@/lib/utils";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader } from "lucide-react";
+import { ImageUp, Loader } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -24,11 +24,18 @@ export function RegisterForm({
   const [isPending, startTransition] = React.useTransition();
   const router = useRouter();
 
+  // State for image previews
+  const [previews, setPreviews] = React.useState({
+    agentSelfiePhoto: null as string | null,
+    identityCard: null as string | null,
+    certificate: null as string | null,
+    nameCard: null as string | null,
+  });
+
   const form = useForm<RegisterSchema>({
     resolver: zodResolver(registerSchema),
     defaultValues: {
-      firstName: "",
-      lastName: "",
+      fullName: "",
       agentCompany: "",
       email: "",
       phoneNumber: "",
@@ -43,26 +50,24 @@ export function RegisterForm({
     startTransition(async () => {
       try {
         const formData = new FormData();
-        formData.append("firstName", input.firstName);
-        formData.append("lastName", input.lastName || "");
-        formData.append("agentCompany", input.agentCompany || "");
+        formData.append("full_name", input.fullName);
+        formData.append("agent_company", input.agentCompany || "");
         formData.append("email", input.email);
-        formData.append("phoneNumber", input.phoneNumber);
+        formData.append("phone", input.phoneNumber);
         formData.append("username", input.username);
-        formData.append("kakaoTalkId", input.kakaoTalkId);
+        formData.append("kakao_talk_id", input.kakaoTalkId);
         formData.append("password", input.password);
-        formData.append("confirmPassword", input.confirmPassword);
         if (input.agentSelfiePhoto) {
-          formData.append("agentSelfiePhoto", input.agentSelfiePhoto);
+          formData.append("photo_selfie", input.agentSelfiePhoto);
         }
         if (input.identityCard) {
-          formData.append("identityCard", input.identityCard);
+          formData.append("photo_id_card", input.identityCard);
         }
         if (input.certificate) {
           formData.append("certificate", input.certificate);
         }
         if (input.nameCard) {
-          formData.append("nameCard", input.nameCard);
+          formData.append("name_card", input.nameCard);
         }
 
         const result = await registerAction(formData);
@@ -88,8 +93,58 @@ export function RegisterForm({
       const file = event.target.files?.[0];
       if (file) {
         form.setValue(field, file);
+
+        // Create preview URL
+        const reader = new FileReader();
+        reader.onloadend = () => {
+          setPreviews((prev) => ({
+            ...prev,
+            [field]: reader.result as string,
+          }));
+        };
+        reader.readAsDataURL(file);
+      } else {
+        // Clear preview if file is removed
+        setPreviews((prev) => ({
+          ...prev,
+          [field]: null,
+        }));
+        form.setValue(field, undefined as unknown as File);
       }
     };
+
+  // Clean up preview URLs
+  React.useEffect(() => {
+    return () => {
+      Object.values(previews).forEach((preview) => {
+        if (preview) {
+          URL.revokeObjectURL(preview);
+        }
+      });
+    };
+  }, []);
+
+  // Render thumbnail with placeholder logic
+  const renderThumbnail = (preview: string | null, alt: string) => {
+    if (preview) {
+      return (
+        <Image
+          src={preview}
+          alt={alt}
+          width={64}
+          height={64}
+          className="h-16 w-16 rounded-md object-cover"
+        />
+      );
+    }
+
+    // Default placeholder
+    return (
+      <div className="flex h-16 w-16 items-center justify-center rounded-md bg-gray-200">
+        <ImageUp className="h-8 w-8 text-gray-500" />
+      </div>
+    );
+  };
 
   return (
     <div className={cn("w-full max-w-6xl space-y-8", className)} {...props}>
@@ -108,36 +163,24 @@ export function RegisterForm({
           {/* Left side - 2 columns for form fields */}
           <div className="lg:col-span-2">
             <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
-              {/* First Name, Last Name */}
-              <div>
-                <Label htmlFor="firstName">
-                  First Name<span className="text-red-500">*</span>
+              {/* Full Name - Full Width */}
+              <div className="md:col-span-2">
+                <Label htmlFor="fullName">
+                  Full Name<span className="text-red-500">*</span>
                 </Label>
                 <Input
-                  id="firstName"
+                  id="fullName"
                   type="text"
                   className="mt-1 rounded bg-gray-200 text-black"
-                  placeholder="Enter your first name"
-                  {...form.register("firstName")}
+                  placeholder="Enter your full name"
+                  {...form.register("fullName")}
                   disabled={isPending}
                 />
-                {form.formState.errors.firstName && (
+                {form.formState.errors.fullName && (
                   <p className="mt-1 text-sm text-red-600">
-                    {form.formState.errors.firstName.message}
+                    {form.formState.errors.fullName.message}
                   </p>
                 )}
-              </div>
-
-              <div>
-                <Label htmlFor="lastName">Last Name</Label>
-                <Input
-                  id="lastName"
-                  type="text"
-                  className="mt-1 rounded bg-gray-200 text-black"
-                  placeholder="Enter your last name"
-                  {...form.register("lastName")}
-                  disabled={isPending}
-                />
               </div>
 
               {/* Agent Company - Full Width */}
@@ -266,15 +309,23 @@ export function RegisterForm({
                 <Label htmlFor="agentSelfiePhoto">
                   Agent Selfie Photo<span className="text-red-500">*</span>
                 </Label>
-                <div className="mt-1">
-                  <Input
-                    id="agentSelfiePhoto"
-                    type="file"
-                    accept="image/*"
-                    className="bg-gray-200 text-black"
-                    onChange={handleFileChange("agentSelfiePhoto")}
-                    disabled={isPending}
-                  />
+                <div className="mt-1 flex items-start gap-4">
+                  <div className="flex-shrink-0">
+                    {renderThumbnail(
+                      previews.agentSelfiePhoto,
+                      "Agent selfie preview",
+                    )}
+                  </div>
+                  <div className="flex-grow">
+                    <Input
+                      id="agentSelfiePhoto"
+                      type="file"
+                      accept="image/*"
+                      className="bg-gray-200 text-black"
+                      onChange={handleFileChange("agentSelfiePhoto")}
+                      disabled={isPending}
+                    />
+                  </div>
                 </div>
                 {form.formState.errors.agentSelfiePhoto && (
                   <p className="mt-1 text-sm text-red-600">
@@ -287,15 +338,23 @@ export function RegisterForm({
                 <Label htmlFor="identityCard">
                   Identity Card<span className="text-red-500">*</span>
                 </Label>
-                <div className="mt-1">
-                  <Input
-                    id="identityCard"
-                    type="file"
-                    accept="image/*"
-                    className="bg-gray-200 text-black"
-                    onChange={handleFileChange("identityCard")}
-                    disabled={isPending}
-                  />
+                <div className="mt-1 flex items-start gap-4">
+                  <div className="flex-shrink-0">
+                    {renderThumbnail(
+                      previews.identityCard,
+                      "Identity card preview",
+                    )}
+                  </div>
+                  <div className="flex-grow">
+                    <Input
+                      id="identityCard"
+                      type="file"
+                      accept="image/*"
+                      className="bg-gray-200 text-black"
+                      onChange={handleFileChange("identityCard")}
+                      disabled={isPending}
+                    />
+                  </div>
                 </div>
                 {form.formState.errors.identityCard && (
                   <p className="mt-1 text-sm text-red-600">
@@ -306,15 +365,23 @@ export function RegisterForm({
 
               <div>
                 <Label htmlFor="certificate">Certificate</Label>
-                <div className="mt-1">
-                  <Input
-                    id="certificate"
-                    type="file"
-                    accept="image/*"
-                    className="rounded bg-gray-200 text-black"
-                    onChange={handleFileChange("certificate")}
-                    disabled={isPending}
-                  />
+                <div className="mt-1 flex items-start gap-4">
+                  <div className="flex-shrink-0">
+                    {renderThumbnail(
+                      previews.certificate,
+                      "Certificate preview",
+                    )}
+                  </div>
+                  <div className="flex-grow">
+                    <Input
+                      id="certificate"
+                      type="file"
+                      accept="image/*"
+                      className="rounded bg-gray-200 text-black"
+                      onChange={handleFileChange("certificate")}
+                      disabled={isPending}
+                    />
+                  </div>
                 </div>
               </div>
 
@@ -322,15 +389,20 @@ export function RegisterForm({
                 <Label htmlFor="nameCard">
                   Name Card<span className="text-red-500">*</span>
                 </Label>
-                <div className="mt-1">
-                  <Input
-                    id="nameCard"
-                    type="file"
-                    accept="image/*"
-                    className="rounded bg-gray-200 text-black"
-                    onChange={handleFileChange("nameCard")}
-                    disabled={isPending}
-                  />
+                <div className="mt-1 flex items-start gap-4">
+                  <div className="flex-shrink-0">
+                    {renderThumbnail(previews.nameCard, "Name card preview")}
+                  </div>
+                  <div className="flex-grow">
+                    <Input
+                      id="nameCard"
+                      type="file"
+                      accept="image/*"
+                      className="rounded bg-gray-200 text-black"
+                      onChange={handleFileChange("nameCard")}
+                      disabled={isPending}
+                    />
+                  </div>
                 </div>
                 {form.formState.errors.nameCard && (
                   <p className="mt-1 text-sm text-red-600">

@@ -4,9 +4,14 @@ import { PromoBanner } from "@/components/home/promo-banner";
 import SearchFilter from "@/components/home/search-filter";
 import React from "react";
 import { getHotels } from "./fetch";
+import { HomePageProps } from "./types";
 
-const HomePage = async () => {
-  const hotelsPromise = getHotels();
+const HomePage = async (props: HomePageProps) => {
+  const searchParams = await props.searchParams;
+
+  const hotelsPromise = getHotels({
+    searchParams,
+  });
   return (
     <div className="space-y-16">
       <div className="relative">

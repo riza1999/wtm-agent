@@ -1,6 +1,7 @@
 "use client";
 
-import { HotelListResponse } from "@/app/(protected)/home/types";
+import { getHotels } from "@/app/(protected)/home/fetch";
+import { Hotel } from "@/app/(protected)/home/types";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
@@ -21,7 +22,7 @@ import { parseAsInteger, useQueryState } from "nuqs";
 import React from "react";
 
 interface HotelResultsProps {
-  promise: Promise<HotelListResponse>;
+  promise: Promise<Awaited<ReturnType<typeof getHotels>>>;
 }
 
 const HotelResults = ({ promise }: HotelResultsProps) => {
@@ -55,7 +56,11 @@ type HotelListProps = HotelResultsProps;
 
 const HotelList = ({ promise }: HotelListProps) => {
   const hotelsData = React.use(promise);
-  const { data: hotels, pageCount } = hotelsData;
+  const {
+    data: { hotels },
+    pagination,
+  } = hotelsData;
+  const pageCount = pagination?.total_pages || 1;
 
   const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
 
@@ -147,11 +152,12 @@ const HotelList = ({ promise }: HotelListProps) => {
 };
 
 interface HotelCardProps {
-  hotel: HotelListResponse["data"][number];
+  hotel: Hotel;
 }
 
 const HotelCard = ({ hotel }: HotelCardProps) => {
   const searchParams = useSearchParams();
+  const [imgError, setImgError] = React.useState(false);
 
   const params = new URLSearchParams(searchParams.toString());
   params.delete("location");
@@ -163,32 +169,32 @@ const HotelCard = ({ hotel }: HotelCardProps) => {
     <Link href={href}>
       <Card className="gap-0 overflow-hidden rounded py-0 hover:opacity-75">
         <div className="relative aspect-[2/1]">
-          <Image
-            src={hotel.image}
-            alt={`${hotel.name} hotel`}
-            fill
-            className="object-cover"
-            sizes={"cover"}
-          />
+          {imgError || !hotel.photo ? (
+            <div className="absolute inset-0 flex items-center justify-center bg-gray-200">
+              <span className="text-gray-500">Image not found</span>
+            </div>
+          ) : (
+            <Image
+              src={hotel.photo}
+              alt={`${hotel.name} hotel`}
+              fill
+              className="object-cover"
+              sizes={"cover"}
+              onError={() => setImgError(true)}
+            />
+          )}
         </div>
 
         <div className="flex flex-col gap-1 p-4">
-          <span className="text-yellow-500">{"★".repeat(hotel.star)}</span>
+          <span className="text-yellow-500">{"★".repeat(hotel.rating)}</span>
           <h3 className="text-lg font-semibold">{hotel.name}</h3>
-          <p className="text-muted-foreground text-sm">{hotel.location}</p>
-
-          {/* <div className="mt-2 flex items-center gap-2 text-sm">
-            <BedDouble className="h-4 w-4" />
-            <span>{hotel.bedType}</span>
-            <Users className="h-4 w-4" />
-            <span>{hotel.guestCount} Guests</span>
-          </div> */}
+          <p className="text-muted-foreground text-sm">{hotel.address}</p>
 
           <div className="mt-2 text-sm">
             <div className="text-xs">
               Start from{" "}
               <span className="text-base font-semibold">
-                {formatCurrency(hotel.price, "IDR")}
+                {formatCurrency(hotel.min_price, "IDR")}
               </span>
             </div>
             <span className="text-xs leading-relaxed">per room, per night</span>

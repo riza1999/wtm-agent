@@ -1,3 +1,4 @@
+import { SearchParams } from "@/types";
 import { clsx, type ClassValue } from "clsx";
 import * as React from "react";
 import { twMerge } from "tailwind-merge";
@@ -22,4 +23,14 @@ export function useDebounce<T>(value: T, delay?: number): T {
 
 export function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
+}
+
+export function buildQueryParams(searchParams: SearchParams): string {
+  const queryParams = new URLSearchParams();
+  Object.entries(searchParams).forEach(([key, value]) => {
+    if (value !== undefined) {
+      queryParams.append(key, String(value));
+    }
+  });
+  return queryParams.toString();
 }

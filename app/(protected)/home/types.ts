@@ -1,16 +1,45 @@
-export interface Hotel {
-  id: string;
-  name: string;
-  location: string;
-  price: number;
-  star: number;
-  bedType: string;
-  guestCount: number;
-  image: string;
+import { SearchParams } from "@/types";
+
+interface FilterBedTypes {
+  bed_type: string;
+  bed_type_id: number;
+  count: number;
 }
 
-export interface HotelListResponse {
-  success: boolean;
-  data: Hotel[];
-  pageCount: number;
+type FilterDistricts = string[];
+
+interface FilterPricing {
+  max_price: number;
+  min_price: number;
+}
+interface FilterRatings {
+  rating: number;
+  count: number;
+}
+interface FilterTotalRooms {
+  count: number;
+  total_bed_rooms: number;
+}
+
+export interface Hotel {
+  address: string;
+  id: number;
+  min_price: number;
+  name: string;
+  photo: string;
+  rating: number;
+}
+
+export interface HotelListData {
+  filter_bed_types: FilterBedTypes[];
+  filter_districts: FilterDistricts;
+  filter_pricing: FilterPricing[];
+  filter_ratings: FilterRatings[];
+  filter_total_rooms: FilterTotalRooms[];
+  hotels: Hotel[];
+  total: number;
+}
+
+export interface HomePageProps {
+  searchParams: Promise<SearchParams>;
 }

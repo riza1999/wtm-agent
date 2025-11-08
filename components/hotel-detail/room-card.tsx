@@ -1,12 +1,18 @@
 "use client";
 
+import {
+  addRoomToCart,
+  AddToCartRequest,
+} from "@/app/(protected)/hotel/[id]/actions";
 import { RoomType } from "@/app/(protected)/hotel/[id]/types";
 import { ChevronRight, Minus, Plus } from "lucide-react";
 import { useRouter } from "next/navigation";
 import { parseAsString, useQueryState } from "nuqs";
 import { useState, useTransition } from "react";
+import { toast } from "sonner";
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
+import { Spinner } from "../ui/spinner";
 import { AdditionalServices } from "./additional-services";
 import { PromoSelection } from "./promo-selection";
 import RoomDetailsDialog from "./room-details-dialog";
@@ -16,9 +22,7 @@ import { RoomOptions } from "./room-options";
 
 export default function RoomCard({ room }: { room: RoomType }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [isConfirmationDialogOpen, setIsConfirmationDialogOpen] =
-    useState(false);
-  const [selectedOption, setSelectedOption] = useState<number>(0);
+  const [selectedRoom, setSelectedRoom] = useState<number>(0);
   const [roomQuantity, setRoomQuantity] = useState(1);
   const [selectedAdditionals, setSelectedAdditionals] = useState<string[]>([]);
   const [selectedPromo, setSelectedPromo] = useState<string | null>(null);
@@ -33,6 +37,14 @@ export default function RoomCard({ room }: { room: RoomType }) {
 
   // Generate unique radio group name for this room type
   const radioGroupName = `room-option-${room.name.toLowerCase().replace(/\s+/g, "-")}`;
+
+  // Function to reset form to default values
+  const resetForm = () => {
+    setSelectedRoom(0);
+    setRoomQuantity(1);
+    setSelectedAdditionals([]);
+    setSelectedPromo(null);
+  };
 
   const handleAdditionalChange = (serviceId: string, checked: boolean) => {
     setSelectedAdditionals((prev) => {
@@ -50,60 +62,37 @@ export default function RoomCard({ room }: { room: RoomType }) {
     setSelectedPromo(promoId);
   };
 
-  const handleAddToCart = () => {
-    // Open confirmation dialog instead of directly adding to cart
-    // setIsConfirmationDialogOpen(true);
+  const handleAddToCart = async () => {
+    if (!from || !to) {
+      toast.error("Please select a check-in and check-out date.");
+      return;
+    }
 
-    console.log({
+    const body = {
       check_in_date: from,
       check_out_date: to,
-      promo_id: selectedPromo,
+      promo_id: Number(selectedPromo) || undefined,
       quantity: roomQuantity,
-      room_price_id: selectedOption,
-      room_type_additional_ids: selectedAdditionals,
+      room_price_id: selectedRoom,
+      room_type_additional_ids: selectedAdditionals.map((id) => Number(id)),
+    } as AddToCartRequest;
+
+    startTransition(async () => {
+      const { success, message } = await addRoomToCart(body);
+
+      if (success) {
+        resetForm();
+        toast.success(message || "Room added to cart successfully", {
+          action: {
+            label: "View Cart",
+            onClick: () => router.push("/cart"),
+          },
+          duration: 5000,
+        });
+      } else {
+        toast.error(message || "Failed to add room to cart. Please try again.");
+      }
     });
-  };
-
-  const handleConfirmAddToCart = () => {
-    // startTransition(async () => {
-    //   // Find the selected promo object
-    //   const promo = availablePromos.find((p) => p.id === selectedPromo) || null;
-    //   const cartData: AddToCartData = {
-    //     hotelName,
-    //     roomName: name,
-    //     selectedOption: options[selectedOption],
-    //     quantity: roomQuantity,
-    //     selectedAdditionals,
-    //     additionalServices: additionals || [],
-    //     promoCode: promo ? promo.code : null,
-    //   };
-    //   const result = await addRoomToCart(cartData);
-    //   if (result.success) {
-    //     // Reset form to default values after successful submission
-    //     resetForm();
-    //     // Close confirmation dialog
-    //     setIsConfirmationDialogOpen(false);
-    //     toast.success(result.message, {
-    //       action: {
-    //         label: "View Cart",
-    //         onClick: () => router.push("/cart"),
-    //       },
-    //       duration: 5000,
-    //     });
-    //   } else {
-    //     // Close confirmation dialog
-    //     setIsConfirmationDialogOpen(false);
-    //     toast.error(result.message);
-    //   }
-    // });
-  };
-
-  // Function to reset form to default values
-  const resetForm = () => {
-    setSelectedOption(0);
-    setRoomQuantity(1);
-    setSelectedAdditionals([]);
-    setSelectedPromo(null);
   };
 
   const features = [
@@ -133,8 +122,8 @@ export default function RoomCard({ room }: { room: RoomType }) {
             <RoomOptions
               with_breakfast={room.with_breakfast}
               without_breakfast={room.without_breakfast}
-              selectedOption={selectedOption}
-              onOptionChange={setSelectedOption}
+              selectedOption={selectedRoom}
+              onOptionChange={setSelectedRoom}
               radioGroupName={radioGroupName}
               promo={room.promos.find(
                 (p) => String(p.promo_id) === selectedPromo,
@@ -197,9 +186,10 @@ export default function RoomCard({ room }: { room: RoomType }) {
 
               <Button
                 onClick={handleAddToCart}
-                disabled={isPending}
+                disabled={isPending || selectedRoom === 0}
                 className="px-8 py-2 text-white hover:bg-slate-700 disabled:opacity-50"
               >
+                {isPending && <Spinner />}
                 {isPending ? "Adding..." : "Add to Cart"}
               </Button>
             </div>
@@ -212,29 +202,6 @@ export default function RoomCard({ room }: { room: RoomType }) {
           room={room}
           features={features}
         />
-
-        {/* Add confirmation dialog */}
-        {/* <AddToCartConfirmationDialog
-          open={isConfirmationDialogOpen}
-          onOpenChange={setIsConfirmationDialogOpen}
-          onConfirm={handleConfirmAddToCart}
-          isLoading={isPending} // Pass the loading state
-          roomData={{
-            hotelName,
-            roomName: name,
-            selectedOption: options[selectedOption],
-            quantity: roomQuantity,
-            selectedAdditionals,
-            additionalServices: additionals || [],
-            promoCode:
-              availablePromos.find((p) => p.id === selectedPromo)?.code || null,
-            totalPrice,
-            roomTotal,
-            servicesTotal,
-            discount,
-            numberOfNights,
-          }}
-        /> */}
       </div>
     </Card>
   );

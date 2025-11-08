@@ -1,0 +1,56 @@
+"use server";
+
+import { apiCall } from "@/lib/api";
+import { ActionResponse } from "@/types";
+import { revalidatePath } from "next/cache";
+
+export interface AddToCartRequest {
+  check_in_date: string;
+  check_out_date: string;
+  promo_id?: number;
+  quantity: number;
+  room_price_id: number;
+  room_type_additional_ids?: number[];
+}
+
+export async function addRoomToCart(
+  input: AddToCartRequest,
+): Promise<ActionResponse<void>> {
+  try {
+    const response = await apiCall(`bookings/cart`, {
+      method: "POST",
+      body: JSON.stringify(input),
+    });
+
+    if (response.status !== 200) {
+      return {
+        success: false,
+        message: response.message || "Failed to add room to cart",
+      };
+    }
+
+    revalidatePath("/hotel/[id]", "layout");
+    revalidatePath("/cart]", "layout");
+
+    return {
+      success: true,
+      message: response.message || "Room has been successfully added to cart",
+    };
+  } catch (error) {
+    console.error("Error adding room to cart:", error);
+
+    // Handle API error responses with specific messages
+    if (error && typeof error === "object" && "message" in error) {
+      return {
+        success: false,
+        message: error.message as string,
+      };
+    }
+
+    return {
+      success: false,
+      message:
+        error instanceof Error ? error.message : "Failed to add room to cart",
+    };
+  }
+}

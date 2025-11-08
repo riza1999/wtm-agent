@@ -22,3 +22,9 @@ export type ApiResponse<TData> = {
     total_pages: number;
   };
 };
+
+export type ActionResponse<TData> = {
+  success: boolean;
+  message: string;
+  data?: TData;
+};

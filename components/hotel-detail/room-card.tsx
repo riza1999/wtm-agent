@@ -532,8 +532,8 @@ function RoomOptions({
             key={without_breakfast.id}
             className={`flex cursor-pointer items-center justify-between rounded-lg border p-4 transition-colors hover:bg-gray-50 ${
               selectedOption === without_breakfast.id
-                ? "border-primary"
-                : "border-gray-200"
+                ? "border-primary bg-primary/5"
+                : "border-gray-200 hover:bg-gray-50"
             }`}
             onClick={() => onOptionChange(without_breakfast.id)}
           >
@@ -591,8 +591,8 @@ function RoomOptions({
             key={with_breakfast.id}
             className={`flex cursor-pointer items-center justify-between rounded-lg border p-4 transition-colors hover:bg-gray-50 ${
               selectedOption === with_breakfast.id
-                ? "border-primary"
-                : "border-gray-200"
+                ? "border-primary bg-primary/5"
+                : "border-gray-200 hover:bg-gray-50"
             }`}
             onClick={() => onOptionChange(with_breakfast.id)}
           >

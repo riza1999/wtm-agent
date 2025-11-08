@@ -1,4 +1,7 @@
+"use client";
+
 import Image from "next/image";
+import { useState } from "react";
 
 function ImageItem({
   src,
@@ -9,6 +12,19 @@ function ImageItem({
   className?: string;
   overlay?: React.ReactNode;
 }) {
+  const [hasError, setHasError] = useState(false);
+
+  if (hasError) {
+    return (
+      <div
+        className={`group relative aspect-1/1 overflow-hidden rounded ${className} flex items-center justify-center bg-gray-100`}
+      >
+        <span className="text-sm text-gray-500">No Image Available</span>
+        {overlay}
+      </div>
+    );
+  }
+
   return (
     <div
       className={`group relative aspect-1/1 overflow-hidden rounded ${className}`}
@@ -19,6 +35,7 @@ function ImageItem({
         className="absolute size-full object-cover group-hover:opacity-75"
         fill
         sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
+        onError={() => setHasError(true)}
       />
       {overlay}
     </div>
@@ -32,7 +49,27 @@ export function HotelGallery({
   images?: string[];
   maxDisplay?: number;
 }) {
-  if (!images.length) return null;
+  if (!images.length) {
+    return (
+      <div className="grid grid-cols-1 gap-y-6 sm:grid-cols-4 sm:grid-rows-2 sm:gap-x-6 lg:gap-6">
+        <div className="flex items-center justify-center rounded bg-gray-100 sm:col-span-2 sm:row-span-2 sm:aspect-square">
+          <span className="text-gray-500">
+            No images available for this hotel
+          </span>
+        </div>
+        {[1, 2, 3, 4].map((i) => (
+          <div
+            key={i}
+            className="flex items-center justify-center rounded bg-gray-100 sm:aspect-auto"
+          >
+            <span className="text-gray-500">
+              No images available for this hotel
+            </span>
+          </div>
+        ))}
+      </div>
+    );
+  }
 
   // Calculate how many images to show and how many are hidden
   const showCount = Math.min(images.length, maxDisplay);

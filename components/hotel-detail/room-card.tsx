@@ -1,27 +1,17 @@
 "use client";
 
 import {
-  addRoomToCart,
-  type AddToCartData,
-} from "@/app/(protected)/cart/actions";
-import type {
   AdditionalService,
-  RoomCardProps,
-  RoomOption,
-} from "@/app/(protected)/hotel-detail/types";
-import {
-  IconArrowAutofitWidth,
-  IconBed,
-  IconFriends,
-  IconSmoking,
-  IconSmokingNo,
-} from "@tabler/icons-react";
+  PriceOption,
+  Promo,
+  RoomType,
+} from "@/app/(protected)/hotel/[id]/types";
+import { getIcon } from "@/lib/utils";
 import { ChevronRight, Minus, Plus } from "lucide-react";
 import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { parseAsString, useQueryState } from "nuqs";
 import { useState, useTransition } from "react";
-import { toast } from "sonner";
 import { Button } from "../ui/button";
 import { Card } from "../ui/card";
 import { Checkbox } from "../ui/checkbox";
@@ -34,18 +24,6 @@ import {
 } from "../ui/dialog";
 import RoomDetailsDialog from "./room-details-dialog";
 
-export interface ExtendedRoomCardProps extends RoomCardProps {
-  hotelName?: string;
-}
-
-// Add promo type definition
-interface Promo {
-  id: string;
-  code: string;
-  description: string;
-  discount: number; // percentage
-}
-
 // Add interface for the confirmation dialog props
 interface ConfirmationDialogProps {
   open: boolean;
@@ -55,7 +33,11 @@ interface ConfirmationDialogProps {
   roomData: {
     hotelName: string;
     roomName: string;
-    selectedOption: RoomOption;
+    selectedOption: {
+      includes?: string;
+      label: string;
+      price: number;
+    };
     quantity: number;
     selectedAdditionals: Record<string, boolean>;
     additionalServices: AdditionalService[];
@@ -214,7 +196,7 @@ function AddToCartConfirmationDialog({
                     key={service.id}
                     className="flex justify-between text-sm"
                   >
-                    <span>{service.label}</span>
+                    <span>{service.name}</span>
                     <span>Rp {service.price.toLocaleString("id-ID")}</span>
                   </div>
                 ))}
@@ -263,14 +245,7 @@ function AddToCartConfirmationDialog({
   );
 }
 
-export default function RoomCard({
-  name,
-  images,
-  options,
-  features,
-  additionals,
-  hotelName = "Grand Hotel",
-}: ExtendedRoomCardProps) {
+export default function RoomCard({ room }: { room: RoomType }) {
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [isConfirmationDialogOpen, setIsConfirmationDialogOpen] =
     useState(false);
@@ -283,35 +258,14 @@ export default function RoomCard({
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
 
+  const roomImages = room.photos || [];
+
   // Get date parameters from URL
   const [from] = useQueryState("from", parseAsString);
   const [to] = useQueryState("to", parseAsString);
 
-  // Sample promos - in a real app, these would come from props or API
-  const availablePromos: Promo[] = [
-    {
-      id: "promo1",
-      code: "SAVE10",
-      description: "10% off on room",
-      discount: 10,
-    },
-    {
-      id: "promo2",
-      code: "WEEKEND",
-      description: "15% off for weekend stay",
-      discount: 15,
-    },
-    {
-      id: "promo3",
-      code: "EARLYBIRD",
-      description: "5% off for early booking",
-      discount: 5,
-    },
-  ];
-
   // Generate unique radio group name for this room type
-  const radioGroupName = `room-option-${name.toLowerCase().replace(/\s+/g, "-")}`;
-  const roomData = { name, images, options, features, additionals };
+  const radioGroupName = `room-option-${room.name.toLowerCase().replace(/\s+/g, "-")}`;
 
   const handleAdditionalChange = (serviceId: string, checked: boolean) => {
     setSelectedAdditionals((prev) => ({
@@ -324,93 +278,13 @@ export default function RoomCard({
     setSelectedPromo(promoId);
   };
 
-  // Calculate pricing information
-  const calculatePricing = () => {
-    // Parse dates
-    const checkinDate = from ? new Date(from) : new Date();
-    const checkoutDate = to
-      ? new Date(to)
-      : new Date(checkinDate.getTime() + 24 * 60 * 60 * 1000); // Default to tomorrow
-
-    // Calculate number of nights
-    const numberOfNights = Math.ceil(
-      (checkoutDate.getTime() - checkinDate.getTime()) / (1000 * 60 * 60 * 24),
-    );
-
-    // Calculate room total based on number of nights
-    const roomTotal =
-      options[selectedOption].price * roomQuantity * numberOfNights;
-
-    const selectedServices = (additionals || []).filter(
-      (service) => selectedAdditionals[service.id],
-    );
-
-    const servicesTotal = selectedServices.reduce(
-      (sum, service) => sum + service.price,
-      0,
-    );
-
-    // Calculate discount
-    let discount = 0;
-    const promo = availablePromos.find((p) => p.id === selectedPromo);
-    if (promo) {
-      discount = (roomTotal * promo.discount) / 100;
-    }
-
-    const totalPrice = roomTotal + servicesTotal - discount;
-
-    return {
-      roomTotal,
-      servicesTotal,
-      discount,
-      totalPrice,
-      numberOfNights,
-    };
-  };
-
   const handleAddToCart = () => {
     // Open confirmation dialog instead of directly adding to cart
     setIsConfirmationDialogOpen(true);
   };
 
   const handleConfirmAddToCart = () => {
-    startTransition(async () => {
-      // Find the selected promo object
-      const promo = availablePromos.find((p) => p.id === selectedPromo) || null;
-
-      const cartData: AddToCartData = {
-        hotelName,
-        roomName: name,
-        selectedOption: options[selectedOption],
-        quantity: roomQuantity,
-        selectedAdditionals,
-        additionalServices: additionals || [],
-        promoCode: promo ? promo.code : null,
-      };
-
-      const result = await addRoomToCart(cartData);
-
-      if (result.success) {
-        // Reset form to default values after successful submission
-        resetForm();
-
-        // Close confirmation dialog
-        setIsConfirmationDialogOpen(false);
-
-        toast.success(result.message, {
-          action: {
-            label: "View Cart",
-            onClick: () => router.push("/cart"),
-          },
-          duration: 5000,
-        });
-      } else {
-        // Close confirmation dialog
-        setIsConfirmationDialogOpen(false);
-
-        toast.error(result.message);
-      }
-    });
+    startTransition(async () => {});
   };
 
   // Function to reset form to default values
@@ -421,40 +295,52 @@ export default function RoomCard({
     setSelectedPromo(null);
   };
 
-  const { roomTotal, servicesTotal, discount, totalPrice, numberOfNights } =
-    calculatePricing();
+  const features = [
+    { icon: "Square", text: `${room.room_size} sqm` },
+    { icon: "Users", text: `${room.max_occupancy} guests` },
+    {
+      icon: room.is_smoking_room ? "CigaretteOff" : "Cigarette",
+      text: room.is_smoking_room ? "Non Smoking" : "Smoking",
+    },
+    { icon: "Bed", text: `${room.bed_types.join(", ")}` },
+  ];
 
   return (
     <Card className="overflow-hidden rounded-lg bg-white shadow-sm">
       <div className="p-6">
-        <h2 className="mb-6 text-2xl font-semibold text-gray-900">{name}</h2>
+        <h2 className="mb-6 text-2xl font-semibold text-gray-900">
+          {room.name}
+        </h2>
 
         <div className="grid grid-cols-1 gap-8 lg:grid-cols-5">
           <RoomImageGallery
-            images={images}
+            images={roomImages}
             onImageClick={() => setIsDialogOpen(true)}
           />
 
           <div className="col-span-3 flex flex-col">
             <RoomOptions
-              options={options}
+              with_breakfast={room.with_breakfast}
+              without_breakfast={room.without_breakfast}
               selectedOption={selectedOption}
               onOptionChange={setSelectedOption}
               radioGroupName={radioGroupName}
-              promo={availablePromos.find((p) => p.id === selectedPromo)}
+              promo={room.promos.find(
+                (p) => String(p.promo_id) === selectedPromo,
+              )}
             />
 
             {/* Promo Selection */}
             <PromoSelection
-              promos={availablePromos}
+              promos={room.promos}
               selectedPromo={selectedPromo}
               onPromoChange={handlePromoChange}
             />
 
             {/* Additional Services */}
-            {additionals && additionals.length > 0 && (
+            {room.additional && room.additional.length > 0 && (
               <AdditionalServices
-                additionals={additionals}
+                additionals={room.additional}
                 selectedAdditionals={selectedAdditionals}
                 onAdditionalChange={handleAdditionalChange}
               />
@@ -514,12 +400,13 @@ export default function RoomCard({
         <RoomDetailsDialog
           open={isDialogOpen}
           onOpenChange={setIsDialogOpen}
-          room={roomData}
+          room={room}
           showThumbnails={true}
+          features={features}
         />
 
         {/* Add confirmation dialog */}
-        <AddToCartConfirmationDialog
+        {/* <AddToCartConfirmationDialog
           open={isConfirmationDialogOpen}
           onOpenChange={setIsConfirmationDialogOpen}
           onConfirm={handleConfirmAddToCart}
@@ -539,7 +426,7 @@ export default function RoomCard({
             discount,
             numberOfNights,
           }}
-        />
+        /> */}
       </div>
     </Card>
   );
@@ -552,13 +439,47 @@ function RoomImageGallery({
   images: string[];
   onImageClick: () => void;
 }) {
+  // If no images, show fallback
+  if (!images || images.length === 0) {
+    return (
+      <div className="col-span-2 flex flex-col gap-2">
+        <div
+          className="group relative col-span-3 aspect-[4/3] cursor-pointer overflow-hidden rounded-lg bg-gray-100"
+          onClick={onImageClick}
+        >
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="text-center">
+              <div className="mx-auto h-12 w-12 text-gray-400" />
+              <p className="mt-2 text-sm text-gray-500">No Image Available</p>
+            </div>
+          </div>
+        </div>
+        <div className="grid grid-cols-3 gap-2">
+          {[1, 2, 3].map((index) => (
+            <div
+              key={index}
+              className="group relative col-span-1 aspect-square cursor-pointer overflow-hidden rounded-lg bg-gray-100"
+              onClick={onImageClick}
+            >
+              <div className="absolute inset-0 flex items-center justify-center">
+                <div className="text-center">
+                  <div className="mx-auto h-6 w-6 text-gray-400" />
+                </div>
+              </div>
+            </div>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="col-span-2 flex flex-col gap-2">
       <div
         className="group relative col-span-3 aspect-[4/3] cursor-pointer overflow-hidden rounded-lg"
         onClick={onImageClick}
       >
-        <Image
+        <ImageWithFallback
           alt="Room main image"
           src={images[0]}
           className="absolute size-full object-cover transition-opacity group-hover:opacity-90"
@@ -573,7 +494,7 @@ function RoomImageGallery({
             className="group relative col-span-1 aspect-square cursor-pointer overflow-hidden rounded-lg"
             onClick={onImageClick}
           >
-            <Image
+            <ImageWithFallback
               alt={`Room image ${index + 2}`}
               src={image}
               className="absolute size-full object-cover transition-opacity group-hover:opacity-90"
@@ -588,79 +509,138 @@ function RoomImageGallery({
 }
 
 function RoomOptions({
-  options,
+  with_breakfast,
+  without_breakfast,
   selectedOption,
   onOptionChange,
   radioGroupName,
   promo,
 }: {
-  options: RoomOption[];
+  with_breakfast: PriceOption;
+  without_breakfast: PriceOption;
   selectedOption: number;
   onOptionChange: (index: number) => void;
   radioGroupName: string;
   promo?: Promo;
 }) {
-  console.log({ promo });
-
   return (
     <div>
       <h3 className="mb-4 text-lg font-semibold text-gray-900">Room Options</h3>
       <div className="space-y-4">
-        {options.map((option, index) => (
+        {without_breakfast && with_breakfast.is_show && (
           <div
-            key={index}
+            key={without_breakfast.id}
             className={`flex cursor-pointer items-center justify-between rounded-lg border p-4 transition-colors hover:bg-gray-50 ${
-              selectedOption === index ? "border-primary" : "border-gray-200"
+              selectedOption === without_breakfast.id
+                ? "border-primary"
+                : "border-gray-200"
             }`}
-            onClick={() => onOptionChange(index)}
+            onClick={() => onOptionChange(without_breakfast.id)}
           >
             <div className="flex items-center space-x-3">
               <input
                 type="radio"
-                id={`option-${radioGroupName}-${index}`}
+                id={`option-${radioGroupName}-${without_breakfast.id}`}
                 name={radioGroupName}
-                checked={selectedOption === index}
-                onChange={() => onOptionChange(index)}
+                checked={selectedOption === without_breakfast.id}
+                onChange={() => onOptionChange(without_breakfast.id)}
                 className="accent-primary h-4 w-4 cursor-pointer text-slate-800 focus:ring-slate-500"
               />
               <div className="cursor-pointer">
                 <label
-                  htmlFor={`option-${radioGroupName}-${index}`}
+                  htmlFor={`option-${radioGroupName}-${without_breakfast.id}`}
                   className="cursor-pointer font-medium text-gray-900"
                 >
-                  {option.label}
+                  Without Breakfast
                 </label>
-                {option.includes && (
-                  <p className="text-sm text-gray-600">{option.includes}</p>
+                {!!without_breakfast.pax && (
+                  <p className="text-sm text-gray-600">
+                    for {without_breakfast.pax} pax
+                  </p>
                 )}
               </div>
             </div>
 
             <div className="text-right">
-              {option.price && (
+              {without_breakfast.price && (
                 <p className="text-sm text-gray-500 line-through">
                   {promo && (
-                    <span>Rp {option.price.toLocaleString("id-ID")}</span>
+                    <span>
+                      Rp {without_breakfast.price.toLocaleString("id-ID")}
+                    </span>
                   )}
                 </p>
               )}
               <p className="text-lg font-semibold text-gray-900">
                 {promo && (
                   <span>
-                    Rp{" "}
-                    {(
-                      ((100 - promo.discount) * option.price) /
-                      100
-                    ).toLocaleString("id-ID")}
+                    Rp {promo.price_without_breakfast.toLocaleString("id-ID")}
                   </span>
                 )}
                 {!promo && (
-                  <span>Rp {option.price.toLocaleString("id-ID")}</span>
+                  <span>
+                    Rp {without_breakfast.price.toLocaleString("id-ID")}
+                  </span>
                 )}
               </p>
             </div>
           </div>
-        ))}
+        )}
+        {with_breakfast && with_breakfast.is_show && (
+          <div
+            key={with_breakfast.id}
+            className={`flex cursor-pointer items-center justify-between rounded-lg border p-4 transition-colors hover:bg-gray-50 ${
+              selectedOption === with_breakfast.id
+                ? "border-primary"
+                : "border-gray-200"
+            }`}
+            onClick={() => onOptionChange(with_breakfast.id)}
+          >
+            <div className="flex items-center space-x-3">
+              <input
+                type="radio"
+                id={`option-${radioGroupName}-${with_breakfast.id}`}
+                name={radioGroupName}
+                checked={selectedOption === with_breakfast.id}
+                onChange={() => onOptionChange(with_breakfast.id)}
+                className="accent-primary h-4 w-4 cursor-pointer text-slate-800 focus:ring-slate-500"
+              />
+              <div className="cursor-pointer">
+                <label
+                  htmlFor={`option-${radioGroupName}-${with_breakfast.id}`}
+                  className="cursor-pointer font-medium text-gray-900"
+                >
+                  With Breakfast
+                </label>
+                {!!with_breakfast.pax && (
+                  <p className="text-sm text-gray-600">
+                    for {with_breakfast.pax} pax
+                  </p>
+                )}
+              </div>
+            </div>
+
+            <div className="text-right">
+              {with_breakfast.price && (
+                <p className="text-sm text-gray-500 line-through">
+                  {promo && (
+                    <span>
+                      Rp {with_breakfast.price.toLocaleString("id-ID")}
+                    </span>
+                  )}
+                </p>
+              )}
+              <p className="text-lg font-semibold text-gray-900">
+                {promo && (
+                  <span>Rp {with_breakfast.price.toLocaleString("id-ID")}</span>
+                )}
+                {!promo && (
+                  <span>Rp {with_breakfast.price.toLocaleString("id-ID")}</span>
+                )}
+              </p>
+            </div>
+          </div>
+        )}
       </div>
     </div>
   );
@@ -682,19 +662,19 @@ function AdditionalServices({
       </h4>
       <div className="space-y-3">
         {additionals.map((service) => (
-          <div key={service.id} className="flex items-center space-x-3">
+          <div key={String(service.id)} className="flex items-center space-x-3">
             <Checkbox
-              id={service.id}
+              id={String(service.id)}
               checked={selectedAdditionals[service.id] || false}
               onCheckedChange={(checked) =>
-                onAdditionalChange(service.id, checked as boolean)
+                onAdditionalChange(String(service.id), checked as boolean)
               }
             />
             <label
-              htmlFor={service.id}
+              htmlFor={String(service.id)}
               className="text-sm font-medium text-gray-900"
             >
-              {service.label}
+              {service.name}
             </label>
             {service.price > 0 && (
               <span className="text-sm text-gray-600">
@@ -716,24 +696,13 @@ function RoomFeatures({
     text: string;
   }[];
 }) {
-  const getIcon = (iconName: string) => {
-    const icons = {
-      Square: <IconArrowAutofitWidth className="h-4 w-4 text-gray-600" />,
-      Users: <IconFriends className="h-4 w-4 text-gray-600" />,
-      Cigarette: <IconSmoking className="h-4 w-4 text-gray-600" />,
-      CigaretteOff: <IconSmokingNo className="h-4 w-4 text-gray-600" />,
-      Bed: <IconBed className="h-4 w-4 text-gray-600" />,
-    };
-    return icons[iconName as keyof typeof icons] || null;
-  };
-
   return (
     <div className="mt-6">
       <div className="flex flex-wrap gap-6">
         {features.map((feature, index) => (
           <div key={index} className="flex items-center gap-2">
             {getIcon(feature.icon)}
-            <span className="text-sm font-semibold text-gray-600">
+            <span className="text-sm font-semibold text-gray-600 capitalize">
               {feature.text}
             </span>
           </div>
@@ -781,36 +750,80 @@ function PromoSelection({
         </div>
 
         {promos.map((promo) => (
-          <div key={promo.id} className="flex items-center space-x-3">
+          <div
+            key={String(promo.promo_id)}
+            className="flex items-center space-x-3"
+          >
             <button
               type="button"
-              onClick={() => onPromoChange(promo.id)}
+              onClick={() => onPromoChange(String(promo.promo_id))}
               className={`flex flex-1 items-center justify-between rounded-lg border p-3 text-left transition-colors ${
-                selectedPromo === promo.id
+                selectedPromo === String(promo.promo_id)
                   ? "border-primary bg-primary/5"
                   : "border-gray-200 hover:bg-gray-50"
               }`}
             >
               <div className="flex items-center">
                 <div className="flex h-5 w-5 items-center justify-center rounded-full border border-gray-300">
-                  {selectedPromo === promo.id && (
+                  {selectedPromo === String(promo.promo_id) && (
                     <div className="bg-primary h-3 w-3 rounded-full"></div>
                   )}
                 </div>
                 <div className="ml-3">
                   <span className="text-sm font-medium text-gray-900">
-                    {promo.code}
+                    {promo.code_promo}
                   </span>
                   <p className="text-xs text-gray-600">{promo.description}</p>
                 </div>
               </div>
-              <span className="rounded bg-green-100 px-2 py-1 text-xs font-medium text-green-800">
+              {/* <span className="rounded bg-green-100 px-2 py-1 text-xs font-medium text-green-800">
                 {promo.discount}% off
-              </span>
+              </span> */}
             </button>
           </div>
         ))}
       </div>
     </div>
+  );
+}
+
+// Add this custom image component with fallback
+function ImageWithFallback({
+  src,
+  alt,
+  className,
+  fill,
+  sizes,
+}: {
+  src: string;
+  alt: string;
+  className?: string;
+  fill?: boolean;
+  sizes?: string;
+}) {
+  const [error, setError] = useState(false);
+
+  if (error) {
+    return (
+      <div
+        className={`${className} flex items-center justify-center bg-gray-100`}
+      >
+        <div className="text-center">
+          <div className="mx-auto h-12 w-12 text-gray-400" />
+          <p className="mt-2 text-sm text-gray-500">No Image Available</p>
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <Image
+      src={src}
+      alt={alt}
+      className={className}
+      fill={fill}
+      sizes={sizes}
+      onError={() => setError(true)}
+    />
   );
 }

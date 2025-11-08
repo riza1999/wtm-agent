@@ -1,4 +1,3 @@
-import type { HotelGalleryProps } from "@/app/(protected)/hotel-detail/types";
 import Image from "next/image";
 
 function ImageItem({
@@ -29,7 +28,10 @@ function ImageItem({
 export function HotelGallery({
   images = [],
   maxDisplay = 5,
-}: HotelGalleryProps) {
+}: {
+  images?: string[];
+  maxDisplay?: number;
+}) {
   if (!images.length) return null;
 
   // Calculate how many images to show and how many are hidden

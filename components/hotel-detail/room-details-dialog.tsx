@@ -1,37 +1,25 @@
 "use client";
 
-import type { RoomCardProps } from "@/app/(protected)/hotel-detail/types";
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-  type CarouselApi,
-} from "@/components/ui/carousel";
+import { RoomType } from "@/app/(protected)/hotel/[id]/types";
+import { type CarouselApi } from "@/components/ui/carousel";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
-import {
-  IconArrowAutofitWidth,
-  IconBath,
-  IconBed,
-  IconFriends,
-  IconSmoking,
-  IconSmokingNo,
-  IconSnowflake,
-} from "@tabler/icons-react";
-import Image from "next/image";
+import { getIcon } from "@/lib/utils";
 import React, { useEffect, useState } from "react";
 
 interface RoomDetailsDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
-  room: RoomCardProps | null;
+  room: RoomType | null;
   showThumbnails?: boolean;
+  features: {
+    icon: string;
+    text: string;
+  }[];
 }
 
 const RoomDetailsDialog: React.FC<RoomDetailsDialogProps> = ({
@@ -39,6 +27,7 @@ const RoomDetailsDialog: React.FC<RoomDetailsDialogProps> = ({
   onOpenChange,
   room,
   showThumbnails = false,
+  features,
 }) => {
   const [mainApi, setMainApi] = useState<CarouselApi>();
   const [thumbnailApi, setThumbnailApi] = useState<CarouselApi>();
@@ -71,53 +60,13 @@ const RoomDetailsDialog: React.FC<RoomDetailsDialogProps> = ({
   };
 
   // Determine grid layout based on image count
-  const getThumbnailGridCols = () => {
-    if (room.images.length <= 2) return "grid-cols-2";
-    if (room.images.length === 3) return "grid-cols-3";
-    return "grid-cols-4";
-  };
+  // const getThumbnailGridCols = () => {
+  //   if (room.images.length <= 2) return "grid-cols-2";
+  //   if (room.images.length === 3) return "grid-cols-3";
+  //   return "grid-cols-4";
+  // };
 
-  const shouldShowThumbnails = showThumbnails && room.images.length > 1;
-
-  const getIcon = (iconName: string) => {
-    const icons = {
-      Square: <IconArrowAutofitWidth className="h-5 w-5 text-gray-600" />,
-      Users: <IconFriends className="h-5 w-5 text-gray-600" />,
-      Cigarette: <IconSmoking className="h-5 w-5 text-gray-600" />,
-      CigaretteOff: <IconSmokingNo className="h-5 w-5 text-gray-600" />,
-      Bed: <IconBed className="h-5 w-5 text-gray-600" />,
-    };
-    return icons[iconName as keyof typeof icons] || null;
-  };
-
-  // Mock room details data based on the image
-  const roomDetails = {
-    size: "40 sqm",
-    guests: "2 Guests",
-    amenities: [
-      {
-        icon: <IconSmokingNo className="h-5 w-5 text-gray-600" />,
-        text: "Non Smoking",
-      },
-      { icon: <IconBath className="h-5 w-5 text-gray-600" />, text: "Bathtub" },
-      {
-        icon: <IconSnowflake className="h-5 w-5 text-gray-600" />,
-        text: "Refrigerator",
-      },
-    ],
-    aboutRoom: [
-      "1 Double Bed or 2 Twin Beds",
-      "Internet - Free wired internet access",
-      "Entertainment - LCD television with cable channels",
-      "Food & Drink - Mini-fridge, minibar (fees may apply), coffee/tea maker, and 24-hour room service",
-      "Bathroom - Private bathroom, shower, bathrobes, and slippers",
-      "Practical - Day bed, safe, and iron/ironing board",
-      "Comfort - Air conditioning and daily housekeeping",
-      "Accessibility - Wheelchair accessible",
-      "Need to Know - No rollaway/extra beds available, bed sheets not available",
-      "Non-Smoking",
-    ],
-  };
+  // const shouldShowThumbnails = showThumbnails && room.images.length > 1;
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -132,7 +81,7 @@ const RoomDetailsDialog: React.FC<RoomDetailsDialogProps> = ({
           {/* Main Image Carousel */}
           <div className="space-y-4">
             <div className="relative">
-              <Carousel setApi={setMainApi} className="w-full">
+              {/* <Carousel setApi={setMainApi} className="w-full">
                 <CarouselContent>
                   {room.images.map((image, index) => (
                     <CarouselItem key={index}>
@@ -154,7 +103,7 @@ const RoomDetailsDialog: React.FC<RoomDetailsDialogProps> = ({
                     <CarouselNext className="right-2 h-8 w-8 bg-white/90 shadow-md hover:bg-white" />
                   </>
                 )}
-              </Carousel>
+              </Carousel> */}
 
               {/* Image counter */}
               <div className="absolute right-2 bottom-2 rounded bg-black/50 px-2 py-1 text-sm text-white">
@@ -163,10 +112,10 @@ const RoomDetailsDialog: React.FC<RoomDetailsDialogProps> = ({
             </div>
 
             {/* Thumbnail Gallery */}
-            {shouldShowThumbnails && (
+            {/* {shouldShowThumbnails && (
               <div className="space-y-2">
                 {room.images.length <= 4 ? (
-                  /* Simple grid for 4 or fewer images */
+                  // Simple grid for 4 or fewer images 
                   <div className={`grid gap-2 ${getThumbnailGridCols()}`}>
                     {room.images.map((image, index) => (
                       <button
@@ -189,7 +138,7 @@ const RoomDetailsDialog: React.FC<RoomDetailsDialogProps> = ({
                     ))}
                   </div>
                 ) : (
-                  /* Scrollable carousel showing all images */
+                  // Scrollable carousel showing all images
                   <div className="relative">
                     <Carousel
                       setApi={setThumbnailApi}
@@ -227,7 +176,7 @@ const RoomDetailsDialog: React.FC<RoomDetailsDialogProps> = ({
                   </div>
                 )}
               </div>
-            )}
+            )} */}
           </div>
 
           {/* Room Information Section */}
@@ -235,18 +184,10 @@ const RoomDetailsDialog: React.FC<RoomDetailsDialogProps> = ({
             <div>
               <h3 className="mb-4 text-lg font-semibold">Room Information</h3>
               <div className="grid grid-cols-3 gap-4">
-                <div className="flex items-center gap-2">
-                  <IconArrowAutofitWidth className="h-5 w-5 text-gray-600" />
-                  <span className="text-sm">{roomDetails.size}</span>
-                </div>
-                <div className="flex items-center gap-2">
-                  <IconFriends className="h-5 w-5 text-gray-600" />
-                  <span className="text-sm">{roomDetails.guests}</span>
-                </div>
-                {roomDetails.amenities.map((amenity, index) => (
+                {features.map((feature, index) => (
                   <div key={index} className="flex items-center gap-2">
-                    {amenity.icon}
-                    <span className="text-sm">{amenity.text}</span>
+                    {getIcon(feature.icon)}
+                    <span className="text-sm capitalize">{feature.text}</span>
                   </div>
                 ))}
               </div>
@@ -255,7 +196,7 @@ const RoomDetailsDialog: React.FC<RoomDetailsDialogProps> = ({
             <div>
               <h3 className="mb-4 text-lg font-semibold">About This Room</h3>
               <div className="space-y-3">
-                {roomDetails.aboutRoom.map((detail, index) => (
+                {/* {roomDetails.aboutRoom.map((detail, index) => (
                   <div key={index} className="flex items-start gap-2">
                     <div className="mt-2 h-1.5 w-1.5 flex-shrink-0 rounded-full bg-gray-400" />
                     <span className="text-sm leading-relaxed text-gray-700">
@@ -272,7 +213,7 @@ const RoomDetailsDialog: React.FC<RoomDetailsDialogProps> = ({
                       )}
                     </span>
                   </div>
-                ))}
+                ))} */}
               </div>
             </div>
           </div>

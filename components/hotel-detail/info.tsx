@@ -1,6 +1,6 @@
 "use client";
 
-import type { HotelInfoProps } from "@/app/(protected)/hotel-detail/types";
+import { NearbyPlace } from "@/app/(protected)/hotel/[id]/types";
 import { Button } from "@/components/ui/button";
 import { ChevronRight, MapPin } from "lucide-react";
 import { useState } from "react";
@@ -36,11 +36,7 @@ function HotelDescription({ description }: { description: string }) {
   );
 }
 
-function HotelNearUs({
-  locations,
-}: {
-  locations: { name: string; distance: string }[];
-}) {
+function HotelNearUs({ locations }: { locations: NearbyPlace[] }) {
   const [isExpanded, setIsExpanded] = useState(false);
   const maxLocations = 3;
   const shouldTruncate = locations.length > maxLocations;
@@ -58,7 +54,7 @@ function HotelNearUs({
             <MapPin size={16} className="mr-2" />
             <span className="text-sm font-medium">{location.name}</span>
             <span className="text-muted-foreground ml-auto text-xs">
-              ({location.distance})
+              {location.radius}m
             </span>
           </div>
         ))}
@@ -116,7 +112,15 @@ export function HotelInfo({
   description,
   facilities,
   nearby,
-}: HotelInfoProps) {
+}: {
+  name: string;
+  location: string;
+  rating: number;
+  price: number;
+  description: string;
+  facilities: string[];
+  nearby: NearbyPlace[];
+}) {
   return (
     <>
       <div className="mb-10 grid grid-cols-1 gap-8 sm:grid-cols-3">

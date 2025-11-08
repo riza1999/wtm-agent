@@ -87,8 +87,6 @@ const HotelList = ({ promise }: HotelListProps) => {
   } = hotelsData;
   const pageCount = pagination?.total_pages || 1;
 
-  console.log({ hotels });
-
   const [page, setPage] = useQueryState("page", parseAsInteger.withDefault(1));
 
   const handleFirst = () => {
@@ -197,7 +195,9 @@ const HotelCard = ({ hotel }: HotelCardProps) => {
   params.delete("location");
   const stringQuery = params.toString();
 
-  const href = stringQuery ? `/hotel-detail?${stringQuery}` : "/hotel-detail";
+  const href = stringQuery
+    ? `/hotel/${hotel.id}?${stringQuery}`
+    : `/hotel/${hotel.id}`;
 
   return (
     <Link href={href}>

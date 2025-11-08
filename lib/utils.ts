@@ -1,4 +1,11 @@
 import { SearchParams } from "@/types";
+import {
+  IconArrowAutofitWidth,
+  IconBed,
+  IconFriends,
+  IconSmoking,
+  IconSmokingNo,
+} from "@tabler/icons-react";
 import { clsx, type ClassValue } from "clsx";
 import * as React from "react";
 import { twMerge } from "tailwind-merge";
@@ -33,4 +40,22 @@ export function buildQueryParams(searchParams: SearchParams): string {
     }
   });
   return queryParams.toString();
+}
+
+export const iconMap: Record<
+  string,
+  React.ComponentType<{ className?: string }>
+> = {
+  Square: IconArrowAutofitWidth,
+  Users: IconFriends,
+  Cigarette: IconSmoking,
+  CigaretteOff: IconSmokingNo,
+  Bed: IconBed,
+};
+
+export function getIcon(iconName: string) {
+  const IconComponent = iconMap[iconName];
+  return IconComponent
+    ? React.createElement(IconComponent, { className: "h-4 w-4 text-gray-600" })
+    : null;
 }

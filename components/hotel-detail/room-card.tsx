@@ -401,7 +401,6 @@ export default function RoomCard({ room }: { room: RoomType }) {
           open={isDialogOpen}
           onOpenChange={setIsDialogOpen}
           room={room}
-          showThumbnails={true}
           features={features}
         />
 
@@ -449,7 +448,6 @@ function RoomImageGallery({
         >
           <div className="absolute inset-0 flex items-center justify-center">
             <div className="text-center">
-              <div className="mx-auto h-12 w-12 text-gray-400" />
               <p className="mt-2 text-sm text-gray-500">No Image Available</p>
             </div>
           </div>
@@ -463,7 +461,7 @@ function RoomImageGallery({
             >
               <div className="absolute inset-0 flex items-center justify-center">
                 <div className="text-center">
-                  <div className="mx-auto h-6 w-6 text-gray-400" />
+                  <p className="text-xs text-gray-500">No Image Available</p>
                 </div>
               </div>
             </div>

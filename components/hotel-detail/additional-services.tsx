@@ -5,7 +5,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 
 interface AdditionalServicesProps {
   additionals: AdditionalService[];
-  selectedAdditionals: Record<string, boolean>;
+  selectedAdditionals: string[];
   onAdditionalChange: (serviceId: string, checked: boolean) => void;
 }
 
@@ -22,7 +22,7 @@ export function AdditionalServices({
       <div className="space-y-3">
         {additionals.map((service) => {
           const serviceId = String(service.id);
-          const isSelected = selectedAdditionals[serviceId] || false;
+          const isSelected = selectedAdditionals.includes(serviceId);
 
           return (
             <div key={serviceId} className="flex items-center space-x-3">

@@ -20,9 +20,7 @@ export default function RoomCard({ room }: { room: RoomType }) {
     useState(false);
   const [selectedOption, setSelectedOption] = useState<number>(0);
   const [roomQuantity, setRoomQuantity] = useState(1);
-  const [selectedAdditionals, setSelectedAdditionals] = useState<
-    Record<string, boolean>
-  >({});
+  const [selectedAdditionals, setSelectedAdditionals] = useState<string[]>([]);
   const [selectedPromo, setSelectedPromo] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
@@ -37,10 +35,15 @@ export default function RoomCard({ room }: { room: RoomType }) {
   const radioGroupName = `room-option-${room.name.toLowerCase().replace(/\s+/g, "-")}`;
 
   const handleAdditionalChange = (serviceId: string, checked: boolean) => {
-    setSelectedAdditionals((prev) => ({
-      ...prev,
-      [serviceId]: checked,
-    }));
+    setSelectedAdditionals((prev) => {
+      if (checked) {
+        // Add serviceId to the array if not already present
+        return prev.includes(serviceId) ? prev : [...prev, serviceId];
+      } else {
+        // Remove serviceId from the array
+        return prev.filter((id) => id !== serviceId);
+      }
+    });
   };
 
   const handlePromoChange = (promoId: string | null) => {
@@ -49,18 +52,57 @@ export default function RoomCard({ room }: { room: RoomType }) {
 
   const handleAddToCart = () => {
     // Open confirmation dialog instead of directly adding to cart
-    setIsConfirmationDialogOpen(true);
+    // setIsConfirmationDialogOpen(true);
+
+    console.log({
+      check_in_date: from,
+      check_out_date: to,
+      promo_id: selectedPromo,
+      quantity: roomQuantity,
+      room_price_id: selectedOption,
+      room_type_additional_ids: selectedAdditionals,
+    });
   };
 
   const handleConfirmAddToCart = () => {
-    startTransition(async () => {});
+    // startTransition(async () => {
+    //   // Find the selected promo object
+    //   const promo = availablePromos.find((p) => p.id === selectedPromo) || null;
+    //   const cartData: AddToCartData = {
+    //     hotelName,
+    //     roomName: name,
+    //     selectedOption: options[selectedOption],
+    //     quantity: roomQuantity,
+    //     selectedAdditionals,
+    //     additionalServices: additionals || [],
+    //     promoCode: promo ? promo.code : null,
+    //   };
+    //   const result = await addRoomToCart(cartData);
+    //   if (result.success) {
+    //     // Reset form to default values after successful submission
+    //     resetForm();
+    //     // Close confirmation dialog
+    //     setIsConfirmationDialogOpen(false);
+    //     toast.success(result.message, {
+    //       action: {
+    //         label: "View Cart",
+    //         onClick: () => router.push("/cart"),
+    //       },
+    //       duration: 5000,
+    //     });
+    //   } else {
+    //     // Close confirmation dialog
+    //     setIsConfirmationDialogOpen(false);
+    //     toast.error(result.message);
+    //   }
+    // });
   };
 
   // Function to reset form to default values
   const resetForm = () => {
     setSelectedOption(0);
     setRoomQuantity(1);
-    setSelectedAdditionals({});
+    setSelectedAdditionals([]);
     setSelectedPromo(null);
   };
 

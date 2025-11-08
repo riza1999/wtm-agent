@@ -3,48 +3,66 @@
 import Image from "next/image";
 import { useState } from "react";
 
-export function RoomImageGallery({
-  images,
-  onImageClick,
-}: {
-  images: string[];
-  onImageClick: () => void;
-}) {
-  // If no images, show fallback
-  if (!images || images.length === 0) {
+interface ImageWithFallbackProps {
+  src: string;
+  alt: string;
+  className?: string;
+  fill?: boolean;
+  sizes?: string;
+}
+
+// Custom image component with fallback
+function ImageWithFallback({
+  src,
+  alt,
+  className,
+  fill,
+  sizes,
+}: ImageWithFallbackProps) {
+  const [hasError, setHasError] = useState(false);
+
+  if (hasError || !src) {
     return (
-      <div className="col-span-2 flex flex-col gap-2">
-        <div
-          className="group relative col-span-3 aspect-[4/3] cursor-pointer overflow-hidden rounded-lg bg-gray-100"
-          onClick={onImageClick}
-        >
-          <div className="absolute inset-0 flex items-center justify-center">
-            <div className="text-center">
-              <p className="mt-2 text-sm text-gray-500">No Image Available</p>
-            </div>
-          </div>
-        </div>
-        <div className="grid grid-cols-3 gap-2">
-          {[1, 2, 3].map((index) => (
-            <div
-              key={index}
-              className="group relative col-span-1 aspect-square cursor-pointer overflow-hidden rounded-lg bg-gray-100"
-              onClick={onImageClick}
-            >
-              <div className="absolute inset-0 flex items-center justify-center">
-                <div className="text-center">
-                  <p className="text-xs text-gray-500">No Image Available</p>
-                </div>
-              </div>
-            </div>
-          ))}
+      <div
+        className={`${className} flex items-center justify-center bg-gray-100`}
+      >
+        <div className="text-center">
+          <div className="mx-auto h-12 w-12 text-gray-400" />
+          <p className="mt-2 text-sm text-gray-500">No Image Available</p>
         </div>
       </div>
     );
   }
 
   return (
+    <Image
+      src={src}
+      alt={alt}
+      className={className}
+      fill={fill}
+      sizes={sizes}
+      onError={() => setHasError(true)}
+    />
+  );
+}
+
+interface RoomImageGalleryProps {
+  images: string[];
+  onImageClick: () => void;
+}
+
+export function RoomImageGallery({
+  images,
+  onImageClick,
+}: RoomImageGalleryProps) {
+  // If no images, show fallback
+  if (!images || images.length === 0) {
+    return <ImageFallbackView onImageClick={onImageClick} />;
+  }
+
+  return (
     <div className="col-span-2 flex flex-col gap-2">
+      {/* Main image */}
       <div
         className="group relative col-span-3 aspect-[4/3] cursor-pointer overflow-hidden rounded-lg"
         onClick={onImageClick}
@@ -57,6 +75,8 @@ export function RoomImageGallery({
           sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw"
         />
       </div>
+
+      {/* Thumbnail images */}
       <div className="grid grid-cols-3 gap-2">
         {images.slice(1, 4).map((image, index) => (
           <div
@@ -78,43 +98,38 @@ export function RoomImageGallery({
   );
 }
 
-// Add this custom image component with fallback
-function ImageWithFallback({
-  src,
-  alt,
-  className,
-  fill,
-  sizes,
-}: {
-  src: string;
-  alt: string;
-  className?: string;
-  fill?: boolean;
-  sizes?: string;
-}) {
-  const [error, setError] = useState(false);
-
-  if (error) {
-    return (
+// Fallback view when no images are available
+function ImageFallbackView({ onImageClick }: { onImageClick: () => void }) {
+  return (
+    <div className="col-span-2 flex flex-col gap-2">
+      {/* Main fallback image */}
       <div
-        className={`${className} flex items-center justify-center bg-gray-100`}
+        className="group relative col-span-3 aspect-[4/3] cursor-pointer overflow-hidden rounded-lg bg-gray-100"
+        onClick={onImageClick}
       >
-        <div className="text-center">
-          <div className="mx-auto h-12 w-12 text-gray-400" />
-          <p className="mt-2 text-sm text-gray-500">No Image Available</p>
+        <div className="absolute inset-0 flex items-center justify-center">
+          <div className="text-center">
+            <p className="mt-2 text-sm text-gray-500">No Image Available</p>
+          </div>
         </div>
       </div>
-    );
-  }
 
-  return (
-    <Image
-      src={src}
-      alt={alt}
-      className={className}
-      fill={fill}
-      sizes={sizes}
-      onError={() => setError(true)}
-    />
+      {/* Thumbnail fallback images */}
+      <div className="grid grid-cols-3 gap-2">
+        {[1, 2, 3].map((index) => (
+          <div
+            key={index}
+            className="group relative col-span-1 aspect-square cursor-pointer overflow-hidden rounded-lg bg-gray-100"
+            onClick={onImageClick}
+          >
+            <div className="absolute inset-0 flex items-center justify-center">
+              <div className="text-center">
+                <p className="text-xs text-gray-500">No Image Available</p>
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
+    </div>
   );
 }

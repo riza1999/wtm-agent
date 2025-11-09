@@ -1,11 +1,11 @@
 import AccountSettingForm from "@/components/settings/account-setting-form";
 import AdditionalSettingsSection from "@/components/settings/additional-settings-section";
 import EditProfileForm from "@/components/settings/edit-profile-form";
-import ProfilePhotoSection from "@/components/settings/profile-photo-section";
+import { ProfilePhotoUploader } from "@/components/settings/profile-photo-uploader";
 import { fetchAccountProfile } from "./fetch";
 
 const AccountSettingPage = async () => {
-  const accountProfile = await fetchAccountProfile();
+  const { data: accountProfile } = await fetchAccountProfile();
 
   return (
     <div className="space-y-8">
@@ -23,7 +23,11 @@ const AccountSettingPage = async () => {
           <AccountSettingForm defaultValues={accountProfile} />
         </div>
         <div className="col-span-4">
-          <ProfilePhotoSection accountProfile={accountProfile} />
+          <div className="mb-2 font-medium">Profile photo</div>
+          <ProfilePhotoUploader
+            photoUrl={`http://${accountProfile.photo_profile}`}
+            fullName={accountProfile.full_name}
+          />
         </div>
       </div>
 

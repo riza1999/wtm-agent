@@ -1,46 +1,99 @@
 "use server";
 
-import {
-  AccountProfile,
-  AccountSettingResponse,
-  LanguageChange,
-  PasswordChange,
-} from "./types";
+import { PasswordChangeSchema } from "@/components/settings/account-setting-form";
+import { ProfileSchema } from "@/components/settings/edit-profile-form";
+import { apiCall } from "@/lib/api";
+import { revalidatePath } from "next/cache";
+import { AccountSettingResponse, LanguageChange } from "./types";
 
-// Simulate updating account profile
 export async function updateAccountProfile(
-  input: AccountProfile,
+  input: ProfileSchema,
 ): Promise<AccountSettingResponse> {
-  // Simulate API call delay
-  await new Promise((resolve) => setTimeout(resolve, 1000));
+  try {
+    const { agent_company, ...body } = input;
 
-  console.log(input);
+    console.log({ body });
 
-  // Simulate success response
-  return { success: true, message: "Profile updated successfully" };
-}
+    const response = await apiCall(`profile`, {
+      method: "PUT",
+      body: JSON.stringify(body),
+    });
 
-// Simulate changing password
-export async function changePassword(
-  input: PasswordChange,
-): Promise<AccountSettingResponse> {
-  // Simulate API call delay
-  await new Promise((resolve) => setTimeout(resolve, 1000));
+    if (response.status !== 200) {
+      return {
+        success: false,
+        message: response.message || "Failed to update profile",
+      };
+    }
 
-  // Simulate validation
-  if (input.newPassword !== input.confirmPassword) {
-    return { success: false, message: "New passwords do not match" };
-  }
+    revalidatePath("/settings", "layout");
 
-  if (input.newPassword.length < 8) {
+    return {
+      success: true,
+      message: response.message || "Profile has been successfully updated",
+    };
+  } catch (error) {
+    console.error("Error updating profile:", error);
+
+    // Handle API error responses with specific messages
+    if (error && typeof error === "object" && "message" in error) {
+      return {
+        success: false,
+        message: error.message as string,
+      };
+    }
+
     return {
       success: false,
-      message: "Password must be at least 8 characters long",
+      message:
+        error instanceof Error ? error.message : "Failed to update profile",
     };
   }
+}
 
-  // Simulate success response
-  return { success: true, message: "Password changed successfully" };
+export async function changePassword(
+  input: PasswordChangeSchema,
+): Promise<AccountSettingResponse> {
+  try {
+    const body = {
+      ...input,
+    };
+
+    const response = await apiCall(`profile/setting`, {
+      method: "PUT",
+      body: JSON.stringify(body),
+    });
+
+    if (response.status !== 200) {
+      return {
+        success: false,
+        message: response.message || "Failed to change password",
+      };
+    }
+
+    revalidatePath("/setting/account-setting", "layout");
+
+    return {
+      success: true,
+      message: response.message || "Password has been successfully changed",
+    };
+  } catch (error) {
+    console.error("Error changing password:", error);
+
+    // Handle API error responses with specific messages
+    if (error && typeof error === "object" && "message" in error) {
+      return {
+        success: false,
+        message: error.message as string,
+      };
+    }
+
+    return {
+      success: false,
+      message:
+        error instanceof Error ? error.message : "Failed to change password",
+    };
+  }
 }
 
 // Simulate changing language setting
@@ -57,6 +110,63 @@ export async function changeLanguage(
     success: true,
     message: `Language changed to ${input.language} successfully`,
   };
+}
+
+export async function updateAccountProfilePhoto(
+  formData: FormData,
+): Promise<AccountSettingResponse> {
+  try {
+    const file = formData.get("photo_profile");
+
+    if (!file || !(file instanceof File)) {
+      return {
+        success: false,
+        message: "Please provide a valid image file.",
+      };
+    }
+
+    const body = new FormData();
+
+    body.append("file_type", "photo");
+    body.append("photo", file);
+
+    const response = await apiCall("profile/file", {
+      method: "PUT",
+      body,
+    });
+
+    console.log({ response });
+
+    if (response.status !== 200) {
+      return {
+        success: false,
+        message: response.message || "Failed to update profile photo",
+      };
+    }
+
+    revalidatePath("/setting/account-setting", "layout");
+
+    return {
+      success: true,
+      message: response.message || "Profile photo updated successfully",
+    };
+  } catch (error) {
+    console.error("Error updating profile photo:", error);
+    if (error && typeof error === "object" && "message" in error) {
+      return {
+        success: false,
+        message: error.message as string,
+      };
+    }
+
+    return {
+      success: false,
+      message:
+        error instanceof Error
+          ? error.message
+          : "Failed to update profile photo",
+    };
+  }
 }
 
 // Simulate certificate upload
@@ -101,39 +211,4 @@ export async function uploadNameCard(
 
   // Simulate success response
   return { success: true, message: "Name card uploaded successfully" };
-}
-
-// Simulate profile photo upload
-export async function uploadProfilePhoto(
-  formData: FormData,
-): Promise<AccountSettingResponse> {
-  // Simulate API call delay
-  await new Promise((resolve) => setTimeout(resolve, 1000));
-
-  const file = formData.get("profilePhoto") as File;
-  console.log("Profile photo upload input:", {
-    fileName: file?.name,
-    fileSize: file?.size,
-    fileType: file?.type,
-  });
-
-  if (!file) {
-    return { success: false, message: "No profile photo file provided" };
-  }
-
-  // Simulate file type validation (only images)
-  if (!file.type.startsWith("image/")) {
-    return { success: false, message: "Please upload a valid image file" };
-  }
-
-  // Simulate file size validation (max 5MB)
-  if (file.size > 5 * 1024 * 1024) {
-    return {
-      success: false,
-      message: "Profile photo must be smaller than 5MB",
-    };
-  }
-
-  // Simulate success response
-  return { success: true, message: "Profile photo uploaded successfully" };
 }

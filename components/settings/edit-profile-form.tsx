@@ -20,22 +20,20 @@ import { toast } from "sonner";
 import z from "zod";
 
 const profileSchema = z.object({
-  username: z.string().min(1, "Username is required"),
-  firstName: z.string().min(1, "First name is required"),
-  lastName: z.string().min(1, "Last name is required"),
-  agentCompany: z.string().min(1, "Agent company is required"),
-  email: z.string().optional(), // Display only field
-  phoneNumber: z
+  full_name: z.string().min(1, "Full name is required"),
+  agent_company: z.string().min(1, "Agent company is required"),
+  email: z.string().email("Please enter a valid email"), // Display only field
+  phone: z
     .string()
-    .min(1, "Phone number is required")
+    .min(8, "Phone number must be at least 8 characters")
     .regex(
-      /^(\+62|62|0)?8[1-9][0-9]{6,9}$/,
-      "Please enter a valid phone number",
+      /^\+\d+$/,
+      "Phone number must start with a country code (e.g., +62) followed by digits only",
     ),
-  kakaoTalkId: z.string().min(1, "KakaoTalk ID is required"),
+  kakao_talk_id: z.string().min(1, "KakaoTalk ID is required"),
 });
 
-type ProfileSchema = z.infer<typeof profileSchema>;
+export type ProfileSchema = z.infer<typeof profileSchema>;
 
 interface EditProfileFormProps {
   defaultValues: AccountProfile;
@@ -47,21 +45,17 @@ const EditProfileForm = ({ defaultValues }: EditProfileFormProps) => {
   const form = useForm<ProfileSchema>({
     resolver: zodResolver(profileSchema),
     defaultValues: {
-      username: defaultValues.username,
-      firstName: defaultValues.firstName,
-      lastName: defaultValues.lastName,
-      agentCompany: defaultValues.agentCompany,
+      full_name: defaultValues.full_name || "",
+      agent_company: defaultValues.agent_company || "",
       email: defaultValues.email || "",
-      phoneNumber: defaultValues.phoneNumber,
-      kakaoTalkId: defaultValues.kakaoTalkId || "",
+      phone: defaultValues.phone || "",
+      kakao_talk_id: defaultValues.kakao_talk_id || "",
     },
   });
 
   function onSubmit(values: ProfileSchema) {
     setIsLoading(true);
-    // Exclude email from submission as it's display-only
-    const { email, ...submitValues } = values;
-    toast.promise(updateAccountProfile(submitValues), {
+    toast.promise(updateAccountProfile(values), {
       loading: "Saving profile changes...",
       success: (data) => {
         setIsLoading(false);
@@ -81,30 +75,11 @@ const EditProfileForm = ({ defaultValues }: EditProfileFormProps) => {
           <div className="grid grid-cols-1 gap-6 md:grid-cols-2">
             <FormField
               control={form.control}
-              name="username"
+              name="full_name"
               render={({ field }) => (
                 <FormItem className="col-span-2">
                   <FormLabel className="text-sm font-medium">
-                    Username
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Enter username"
-                      className="bg-gray-200"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="firstName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm font-medium">
-                    First Name
+                    Full Name
                   </FormLabel>
                   <FormControl>
                     <Input
@@ -119,26 +94,7 @@ const EditProfileForm = ({ defaultValues }: EditProfileFormProps) => {
             />
             <FormField
               control={form.control}
-              name="lastName"
-              render={({ field }) => (
-                <FormItem>
-                  <FormLabel className="text-sm font-medium">
-                    Last Name
-                  </FormLabel>
-                  <FormControl>
-                    <Input
-                      placeholder="Enter last name"
-                      className="bg-gray-200"
-                      {...field}
-                    />
-                  </FormControl>
-                  <FormMessage />
-                </FormItem>
-              )}
-            />
-            <FormField
-              control={form.control}
-              name="agentCompany"
+              name="agent_company"
               render={({ field }) => (
                 <FormItem className="col-span-2">
                   <FormLabel className="text-sm font-medium">
@@ -166,8 +122,6 @@ const EditProfileForm = ({ defaultValues }: EditProfileFormProps) => {
                       type="email"
                       placeholder="Enter email address"
                       className="bg-gray-200"
-                      disabled
-                      readOnly
                       {...field}
                     />
                   </FormControl>
@@ -177,7 +131,7 @@ const EditProfileForm = ({ defaultValues }: EditProfileFormProps) => {
             />
             <FormField
               control={form.control}
-              name="phoneNumber"
+              name="phone"
               render={({ field }) => (
                 <FormItem className="col-span-2">
                   <FormLabel className="text-sm font-medium">
@@ -196,7 +150,7 @@ const EditProfileForm = ({ defaultValues }: EditProfileFormProps) => {
             />
             <FormField
               control={form.control}
-              name="kakaoTalkId"
+              name="kakao_talk_id"
               render={({ field }) => (
                 <FormItem className="col-span-2">
                   <FormLabel className="text-sm font-medium">

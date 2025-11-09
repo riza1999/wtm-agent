@@ -1,5 +1,9 @@
 import { DataTableSkeleton } from "@/components/data-table/data-table-skeleton";
 import HistoryBookingTable from "@/components/history-booking/table/history-booking-table";
+import {
+  fetchListBookingStatus,
+  fetchListPaymentStatus,
+} from "@/server/general";
 import React from "react";
 import { getData } from "./fetch";
 import { HistoryBookingPageProps } from "./types";
@@ -11,6 +15,8 @@ const HistoryBookingPage = async (props: HistoryBookingPageProps) => {
     getData({
       searchParams,
     }),
+    fetchListBookingStatus(),
+    fetchListPaymentStatus(),
   ]);
 
   return (

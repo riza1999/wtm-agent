@@ -1,9 +1,14 @@
 "use client";
 
+import { getData } from "@/app/(protected)/history-booking/fetch";
 import { HistoryBooking } from "@/app/(protected)/history-booking/types";
 import { DataTable } from "@/components/data-table/data-table";
 import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
 import { useDataTable } from "@/hooks/use-data-table";
+import {
+  fetchListBookingStatus,
+  fetchListPaymentStatus,
+} from "@/server/general";
 import type { DataTableRowAction } from "@/types/data-table";
 import React, { useTransition } from "react";
 import ViewDetailDialog from "../dialog/view-detail-dialog";
@@ -15,18 +20,17 @@ import { getHistoryBookingTableColumns } from "./history-booking-columns";
 interface HistoryBookingTableProps {
   promises: Promise<
     [
-      Awaited<
-        ReturnType<
-          typeof import("@/app/(protected)/history-booking/fetch").getData
-        >
-      >,
+      Awaited<ReturnType<typeof getData>>,
+      Awaited<ReturnType<typeof fetchListBookingStatus>>,
+      Awaited<ReturnType<typeof fetchListPaymentStatus>>,
     ]
   >;
 }
 
 const HistoryBookingTable = ({ promises }: HistoryBookingTableProps) => {
   const [isPending, startTransition] = useTransition();
-  const [{ data, pageCount }] = React.use(promises);
+  const [{ data, pagination }, bookingStatusOptions, paymentStatusOptions] =
+    React.use(promises);
   const [rowAction, setRowAction] =
     React.useState<DataTableRowAction<HistoryBooking> | null>(null);
 
@@ -34,6 +38,8 @@ const HistoryBookingTable = ({ promises }: HistoryBookingTableProps) => {
     () =>
       getHistoryBookingTableColumns({
         setRowAction,
+        bookingStatusOptions,
+        paymentStatusOptions,
       }),
     [],
   );
@@ -41,8 +47,8 @@ const HistoryBookingTable = ({ promises }: HistoryBookingTableProps) => {
   const { table } = useDataTable({
     data,
     columns,
-    pageCount,
-    getRowId: (originalRow) => originalRow.id,
+    pageCount: pagination?.total_pages || 1,
+    getRowId: (originalRow) => originalRow.booking_id.toString(),
     shallow: false,
     clearOnDefault: true,
     startTransition,

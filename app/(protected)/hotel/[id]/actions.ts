@@ -30,7 +30,7 @@ export async function addRoomToCart(
     }
 
     revalidatePath("/hotel/[id]", "layout");
-    revalidatePath("/cart]", "layout");
+    revalidatePath("/cart", "layout");
 
     return {
       success: true,

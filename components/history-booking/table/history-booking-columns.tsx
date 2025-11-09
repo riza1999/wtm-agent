@@ -9,6 +9,11 @@ import {
   DropdownMenuSeparator,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { cn } from "@/lib/utils";
+import {
+  fetchListBookingStatus,
+  fetchListPaymentStatus,
+} from "@/server/general";
 import { DataTableRowAction } from "@/types/data-table";
 import {
   IconCloudUpload,
@@ -21,25 +26,18 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Ellipsis } from "lucide-react";
 import React from "react";
 
-// Helper function to get invoice count for a booking
-function getInvoiceCount(booking: HistoryBooking): number {
-  // Generate invoice count based on booking ID to ensure consistency
-  // This matches the logic in the invoice dialog
-  const hash = booking.bookingId.split("").reduce((a, b) => {
-    a = (a << 5) - a + b.charCodeAt(0);
-    return a & a;
-  }, 0);
-  return Math.abs(hash % 3) + 1; // 1-3 invoices
-}
-
 interface GetHistoryBookingTableColumnsProps {
   setRowAction: React.Dispatch<
     React.SetStateAction<DataTableRowAction<HistoryBooking> | null>
   >;
+  bookingStatusOptions: Awaited<ReturnType<typeof fetchListBookingStatus>>;
+  paymentStatusOptions: Awaited<ReturnType<typeof fetchListPaymentStatus>>;
 }
 
 export function getHistoryBookingTableColumns({
   setRowAction,
+  bookingStatusOptions,
+  paymentStatusOptions,
 }: GetHistoryBookingTableColumnsProps): ColumnDef<HistoryBooking>[] {
   return [
     {
@@ -48,17 +46,17 @@ export function getHistoryBookingTableColumns({
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="No." />
       ),
-      cell: ({ row }) => row.original.number,
+      cell: ({ row }) => row.index + 1,
       enableHiding: false,
       size: 24,
     },
     {
       id: "search",
-      accessorFn: (row) => `${row.guestName} ${row.bookingId}`,
+      accessorFn: (row) => `${row.guest_name.join(", ")}`,
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Guest Name" />
       ),
-      cell: ({ row }) => row.original.guestName,
+      // cell: ({ row }) => row.original.guest_name,
       enableHiding: false,
       meta: {
         label: "Search",
@@ -68,41 +66,39 @@ export function getHistoryBookingTableColumns({
       enableColumnFilter: true,
     },
     {
-      id: "bookingId",
-      accessorKey: "bookingId",
+      id: "booking_id",
+      accessorKey: "booking_id",
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="ID Booking" />
       ),
-      cell: ({ row }) => row.original.bookingId,
       enableHiding: false,
     },
     {
-      id: "bookingStatus",
-      accessorKey: "bookingStatus",
+      id: "status_booking_id",
+      accessorKey: "status_booking_id",
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Booking Status" />
       ),
       cell: ({ row }) => {
-        const status = row.original.bookingStatus;
-        let color = "";
-        let label = "";
-        switch (status) {
-          case "approved":
-            color = "bg-green-100 text-green-700 border-green-200";
-            label = "Confirmed";
-            break;
-          case "waiting":
-            color = "bg-yellow-100 text-yellow-700 border-yellow-200";
-            label = "Waiting Approval";
-            break;
-          default:
-            color = "bg-red-100 text-red-700 border-red-200";
-            label = "Rejected";
-        }
+        const isApproved = row.original.booking_status
+          .toLowerCase()
+          .includes("approved");
+
+        const isWaiting = row.original.booking_status
+          .toLowerCase()
+          .includes("waiting");
+
         return (
           <Badge
-            className={`border font-medium ${color}`}
-          >{`2 of 2 ${label}`}</Badge>
+            className={cn("border font-medium capitalize", {
+              "border-green-200 bg-green-100 text-green-700": isApproved,
+              "border-yellow-200 bg-yellow-100 text-yellow-700": isWaiting,
+              "border-red-200 bg-red-100 text-red-700":
+                !isApproved && !isWaiting,
+            })}
+          >
+            {row.original.booking_status}
+          </Badge>
         );
       },
       enableHiding: false,
@@ -110,51 +106,44 @@ export function getHistoryBookingTableColumns({
         label: "Booking Status",
         placeholder: "Filter by status...",
         variant: "multiSelect",
-        options: [
-          { label: "Approved", value: "approved" },
-          { label: "Waiting Approval", value: "waiting" },
-          { label: "Rejected", value: "rejected" },
-        ],
+        options: bookingStatusOptions,
       },
       enableColumnFilter: true,
     },
     {
-      id: "paymentStatus",
-      accessorKey: "paymentStatus",
+      id: "status_payment_id",
+      accessorKey: "status_payment_id",
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Payment Status" />
       ),
       cell: ({ row }) => {
-        const status = row.original.paymentStatus;
-        let color = "";
-        let label = "";
-        switch (status) {
-          case "paid":
-            color = "bg-green-100 text-green-700 border-green-200";
-            label = "Paid";
-            break;
-          default:
-            color = "bg-red-100 text-red-700 border-red-200";
-            label = "Unpaid";
-        }
-        return <Badge className={`border font-medium ${color}`}>{label}</Badge>;
+        const status = row.original.payment_status;
+        const isPaid = row.original.payment_status.toLowerCase() === "paid";
+
+        return (
+          <Badge
+            className={cn("border font-medium capitalize", {
+              "border-green-200 bg-green-100 text-green-700": isPaid,
+              "border-red-200 bg-red-100 text-red-700": !isPaid,
+            })}
+          >
+            {status}
+          </Badge>
+        );
       },
       enableHiding: false,
       meta: {
         label: "Payment Status",
         placeholder: "Filter by payment...",
         variant: "multiSelect",
-        options: [
-          { label: "Paid", value: "paid" },
-          { label: "Unpaid", value: "unpaid" },
-        ],
+        options: paymentStatusOptions,
       },
       enableColumnFilter: true,
     },
     {
       id: "actions",
       cell: function Cell({ row }) {
-        const invoiceCount = getInvoiceCount(row.original);
+        const invoiceCount = 2;
 
         return (
           <DropdownMenu>
@@ -179,14 +168,14 @@ export function getHistoryBookingTableColumns({
                   </Badge>
                 )}
               </DropdownMenuItem>
-              {row.original.paymentStatus === "paid" && (
+              {row.original.payment_status === "paid" && (
                 <DropdownMenuItem
                   onSelect={() => setRowAction({ row, variant: "receipt" })}
                 >
                   <IconReceipt className="mr-2 h-4 w-4" /> View Receipt
                 </DropdownMenuItem>
               )}
-              {row.original.paymentStatus === "unpaid" && (
+              {row.original.payment_status === "unpaid" && (
                 <DropdownMenuItem
                   onSelect={() => setRowAction({ row, variant: "receipt" })}
                 >

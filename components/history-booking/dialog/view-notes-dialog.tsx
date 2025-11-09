@@ -20,48 +20,13 @@ const ViewNotesDialog: React.FC<ViewNotesDialogProps> = ({
   onOpenChange,
   booking,
 }) => {
-  const getStatusBadgeVariant = (status: string) => {
-    if (status === "approved" || status === "paid") {
-      return "default";
-    }
-    if (status === "rejected" || status === "unpaid") {
-      return "destructive";
-    }
-    return "secondary";
-  };
+  const isConfirmed = booking?.booking_status
+    .toLowerCase()
+    .includes("confirmed");
 
-  const getBookingStatusStyles = (status: string) => {
-    switch (status) {
-      case "approved":
-        return "border-green-200 bg-green-100 text-green-800 hover:bg-green-100";
-      case "waiting":
-        return "border-yellow-200 bg-yellow-100 text-yellow-800 hover:bg-yellow-100";
-      case "rejected":
-        return "border-red-200 bg-red-100 text-red-800 hover:bg-red-100";
-      default:
-        return "border-gray-200 bg-gray-100 text-gray-800 hover:bg-gray-100";
-    }
-  };
+  const isWaiting = booking?.booking_status.toLowerCase().includes("waiting");
 
-  const getPaymentStatusStyles = (status: string) => {
-    switch (status) {
-      case "paid":
-        return "border-green-200 bg-green-100 text-green-800 hover:bg-green-100";
-      case "unpaid":
-        return "border-red-200 bg-red-100 text-red-800 hover:bg-red-100";
-      default:
-        return "border-gray-200 bg-gray-100 text-gray-800 hover:bg-gray-100";
-    }
-  };
-
-  const getStatusLabel = (status: string) => {
-    if (status === "approved") return "Confirmed";
-    if (status === "waiting") return "Waiting";
-    if (status === "rejected") return "Rejected";
-    if (status === "paid") return "Paid";
-    if (status === "unpaid") return "Unpaid";
-    return status;
-  };
+  const isPaid = booking?.payment_status.toLowerCase().includes("paid");
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -78,10 +43,10 @@ const ViewNotesDialog: React.FC<ViewNotesDialogProps> = ({
                   Booking Status
                 </span>
                 <Badge
-                  variant={getStatusBadgeVariant(booking.bookingStatus)}
-                  className={getBookingStatusStyles(booking.bookingStatus)}
+                  variant={isConfirmed ? "green" : isWaiting ? "yellow" : "red"}
+                  className="capitalize"
                 >
-                  {getStatusLabel(booking.bookingStatus)}
+                  {booking.booking_status}
                 </Badge>
               </div>
 
@@ -91,10 +56,10 @@ const ViewNotesDialog: React.FC<ViewNotesDialogProps> = ({
                   Payment Status
                 </span>
                 <Badge
-                  variant={getStatusBadgeVariant(booking.paymentStatus)}
-                  className={getPaymentStatusStyles(booking.paymentStatus)}
+                  variant={isPaid ? "green" : "red"}
+                  className={"capitalize"}
                 >
-                  {getStatusLabel(booking.paymentStatus)}
+                  {booking.payment_status}
                 </Badge>
               </div>
 

@@ -56,7 +56,6 @@ export function getHistoryBookingTableColumns({
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Guest Name" />
       ),
-      // cell: ({ row }) => row.original.guest_name,
       enableHiding: false,
       meta: {
         label: "Search",
@@ -80,9 +79,9 @@ export function getHistoryBookingTableColumns({
         <DataTableColumnHeader column={column} title="Booking Status" />
       ),
       cell: ({ row }) => {
-        const isApproved = row.original.booking_status
+        const isConfirmed = row.original.booking_status
           .toLowerCase()
-          .includes("approved");
+          .includes("confirmed");
 
         const isWaiting = row.original.booking_status
           .toLowerCase()
@@ -90,12 +89,8 @@ export function getHistoryBookingTableColumns({
 
         return (
           <Badge
-            className={cn("border font-medium capitalize", {
-              "border-green-200 bg-green-100 text-green-700": isApproved,
-              "border-yellow-200 bg-yellow-100 text-yellow-700": isWaiting,
-              "border-red-200 bg-red-100 text-red-700":
-                !isApproved && !isWaiting,
-            })}
+            variant={isConfirmed ? "green" : isWaiting ? "yellow" : "red"}
+            className={cn("border font-medium capitalize")}
           >
             {row.original.booking_status}
           </Badge>
@@ -122,10 +117,8 @@ export function getHistoryBookingTableColumns({
 
         return (
           <Badge
-            className={cn("border font-medium capitalize", {
-              "border-green-200 bg-green-100 text-green-700": isPaid,
-              "border-red-200 bg-red-100 text-red-700": !isPaid,
-            })}
+            variant={isPaid ? "green" : "red"}
+            className={cn("border font-medium capitalize")}
           >
             {status}
           </Badge>

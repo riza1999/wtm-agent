@@ -155,101 +155,131 @@ const ViewDetailDialog: React.FC<ViewDetailDialogProps> = ({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {bookingDetails.map((detail, index) => (
-                    <TableRow
-                      key={index}
-                      className="[&:nth-child(odd)]:bg-white"
-                    >
-                      <TableCell className="font-medium capitalize">
-                        {detail.guest_name}
-                      </TableCell>
-                      <TableCell className="capitalize">
-                        {detail.agent_name}
-                      </TableCell>
-                      <TableCell>
-                        <div>
-                          <div className="font-medium capitalize">
-                            {detail.hotel_name}
+                  {bookingDetails.map((detail, index) => {
+                    const isConfirmed =
+                      detail.booking_status.toLowerCase() === "confirmed";
+
+                    const isWaiting =
+                      detail.booking_status.toLowerCase() === "waiting";
+
+                    const isPaid =
+                      detail.payment_status.toLowerCase() === "paid";
+
+                    return (
+                      <TableRow
+                        key={index}
+                        className="[&:nth-child(odd)]:bg-white"
+                      >
+                        <TableCell className="font-medium capitalize">
+                          {detail.guest_name}
+                        </TableCell>
+                        <TableCell className="capitalize">
+                          {detail.agent_name}
+                        </TableCell>
+                        <TableCell>
+                          <div>
+                            <div className="font-medium capitalize">
+                              {detail.hotel_name}
+                            </div>
+                            <div className="text-muted-foreground text-sm capitalize">
+                              {detail.additional.join(", ")}
+                            </div>
                           </div>
-                          <div className="text-muted-foreground text-sm capitalize">
-                            {detail.additional.join(", ")}
+                        </TableCell>
+                        <TableCell>{detail.sub_booking_id}</TableCell>
+                        <TableCell className="capitalize">
+                          <Badge
+                            variant={
+                              isConfirmed
+                                ? "green"
+                                : isWaiting
+                                  ? "yellow"
+                                  : "red"
+                            }
+                            className={"border font-medium capitalize"}
+                          >
+                            {detail.booking_status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell className="capitalize">
+                          <Badge
+                            variant={isPaid ? "green" : "red"}
+                            className={"border font-medium capitalize"}
+                          >
+                            {detail.payment_status}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <div className="text-xs">
+                            <div className="text-right text-red-600">
+                              Cancellation Period
+                            </div>
+                            <div className="text-right text-red-600">
+                              {detail.cancellation_date}
+                            </div>
                           </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>{detail.sub_booking_id}</TableCell>
-                      <TableCell className="capitalize">
-                        {getStatusBadge(detail.booking_status, "booking")}
-                      </TableCell>
-                      <TableCell className="capitalize">
-                        {getStatusBadge(detail.payment_status, "payment")}
-                      </TableCell>
-                      <TableCell>
-                        <div className="text-xs">
-                          <div className="text-right text-red-600">
-                            Cancellation Period
-                          </div>
-                          <div className="text-right text-red-600">
-                            {detail.cancellation_date}
-                          </div>
-                        </div>
-                      </TableCell>
-                      <TableCell>
-                        <DropdownMenu>
-                          <DropdownMenuTrigger asChild>
-                            <Button
-                              aria-label="Open menu"
-                              variant="ghost"
-                              className="data-[state=open]:bg-muted flex size-8 p-0"
-                            >
-                              <Ellipsis className="size-4" aria-hidden="true" />
-                            </Button>
-                          </DropdownMenuTrigger>
-                          <DropdownMenuContent align="end" className="w-48">
-                            <DropdownMenuItem
-                              onSelect={() => handleViewInvoice(booking)}
-                            >
-                              <IconFileDescription className="mr-2 h-4 w-4" />
-                              View Invoice
-                              {(() => {
-                                const invoiceCount = 1;
-                                return invoiceCount > 1 ? (
-                                  <Badge
-                                    variant="secondary"
-                                    className="ml-2 text-xs"
-                                  >
-                                    {invoiceCount}
-                                  </Badge>
-                                ) : null;
-                              })()}
-                            </DropdownMenuItem>
-                            {detail.payment_status === "paid" ? (
-                              <DropdownMenuItem
-                                onSelect={() => handleViewReceipt(booking)}
+                        </TableCell>
+                        <TableCell>
+                          <DropdownMenu>
+                            <DropdownMenuTrigger asChild>
+                              <Button
+                                aria-label="Open menu"
+                                variant="ghost"
+                                className="data-[state=open]:bg-muted flex size-8 p-0"
                               >
-                                <IconReceipt className="mr-2 h-4 w-4" /> View
-                                Receipt
-                              </DropdownMenuItem>
-                            ) : (
+                                <Ellipsis
+                                  className="size-4"
+                                  aria-hidden="true"
+                                />
+                              </Button>
+                            </DropdownMenuTrigger>
+                            <DropdownMenuContent align="end" className="w-48">
                               <DropdownMenuItem
-                                onSelect={() => handleViewReceipt(booking)}
+                                onSelect={() => handleViewInvoice(booking)}
                               >
-                                <IconCloudUpload className="mr-2 h-4 w-4" />
-                                Upload Receipt
+                                <IconFileDescription className="mr-2 h-4 w-4" />
+                                View Invoice
+                                {(() => {
+                                  const invoiceCount = 1;
+                                  return invoiceCount > 1 ? (
+                                    <Badge
+                                      variant="secondary"
+                                      className="ml-2 text-xs"
+                                    >
+                                      {invoiceCount}
+                                    </Badge>
+                                  ) : null;
+                                })()}
                               </DropdownMenuItem>
-                            )}
-                            <DropdownMenuSeparator />
-                            <DropdownMenuItem
-                              variant="destructive"
-                              onSelect={handleCancelClick}
-                            >
-                              <IconCancel className="mr-2 h-4 w-4" />
-                              Cancel Booking
-                            </DropdownMenuItem>
-                          </DropdownMenuContent>
-                        </DropdownMenu>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                              {detail.payment_status === "paid" ? (
+                                <DropdownMenuItem
+                                  onSelect={() => handleViewReceipt(booking)}
+                                >
+                                  <IconReceipt className="mr-2 h-4 w-4" /> View
+                                  Receipt
+                                </DropdownMenuItem>
+                              ) : (
+                                <DropdownMenuItem
+                                  onSelect={() => handleViewReceipt(booking)}
+                                >
+                                  <IconCloudUpload className="mr-2 h-4 w-4" />
+                                  Upload Receipt
+                                </DropdownMenuItem>
+                              )}
+                              <DropdownMenuSeparator />
+                              <DropdownMenuItem
+                                variant="destructive"
+                                onSelect={handleCancelClick}
+                              >
+                                <IconCancel className="mr-2 h-4 w-4" />
+                                Cancel Booking
+                              </DropdownMenuItem>
+                            </DropdownMenuContent>
+                          </DropdownMenu>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
               <div className="flex justify-center gap-2 py-2">

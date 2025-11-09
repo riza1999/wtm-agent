@@ -155,6 +155,14 @@ const ViewDetailDialog: React.FC<ViewDetailDialogProps> = ({
                   </TableRow>
                 </TableHeader>
                 <TableBody>
+                  {bookingDetails.length === 0 && (
+                    <TableRow>
+                      <TableCell colSpan={8} className="text-center">
+                        No data available
+                      </TableCell>
+                    </TableRow>
+                  )}
+
                   {bookingDetails.map((detail, index) => {
                     const isConfirmed =
                       detail.booking_status.toLowerCase() === "confirmed";
@@ -282,7 +290,7 @@ const ViewDetailDialog: React.FC<ViewDetailDialogProps> = ({
                   })}
                 </TableBody>
               </Table>
-              <div className="flex justify-center gap-2 py-2">
+              <div className="mt-4 flex justify-center gap-2 py-2">
                 <Button asChild>
                   <Link href={`/contact-us?bookingId=${booking?.booking_id}`}>
                     Inquire This Booking

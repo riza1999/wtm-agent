@@ -52,7 +52,7 @@ export function getHistoryBookingTableColumns({
     },
     {
       id: "search",
-      accessorFn: (row) => `${row.guest_name.join(", ")}`,
+      accessorFn: (row) => row.guest_name?.join(", ") || "Not found",
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="Guest Name" />
       ),
@@ -92,7 +92,7 @@ export function getHistoryBookingTableColumns({
             variant={isConfirmed ? "green" : isWaiting ? "yellow" : "red"}
             className={cn("border font-medium capitalize")}
           >
-            {row.original.booking_status}
+            {row.original.booking_status || "Not found"}
           </Badge>
         );
       },
@@ -120,7 +120,7 @@ export function getHistoryBookingTableColumns({
             variant={isPaid ? "green" : "red"}
             className={cn("border font-medium capitalize")}
           >
-            {status}
+            {status || "Not found"}
           </Badge>
         );
       },

@@ -87,7 +87,9 @@ export class InvoiceGenerator {
     return {
       // Basic booking information
       bookingId: booking.booking_id.toString(),
-      guestName: booking.guest_name.join(", "),
+      guestName: booking?.guest_name
+        ? booking.guest_name.join(", ")
+        : "Not found",
       bookingDate: this.generateBookingDate(),
       checkInDate,
       checkOutDate,
@@ -132,7 +134,7 @@ export class InvoiceGenerator {
 
       // Company and customer information
       company: this.COMPANY_INFO,
-      customer: this.generateCustomerInfo(booking.guest_name.join(", ")),
+      customer: this.generateCustomerInfo("dummy"),
       lineItems: this.generateLineItems(
         roomType,
         numberOfNights,

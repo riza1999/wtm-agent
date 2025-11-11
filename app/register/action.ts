@@ -1,8 +1,6 @@
 "use server";
 
-import { apiCall } from "@/lib/api";
 import { type RegisterResponse } from "./type";
-import { revalidatePath } from "next/cache";
 import { ApiResponse } from "@/types";
 
 const AUTH_API_BASE_URL =
@@ -12,22 +10,11 @@ export async function registerAction(
   formData: FormData,
 ): Promise<RegisterResponse> {
   try {
-    const data = Object.fromEntries(formData.entries());
-
-    console.table({ data });
-
     const response = await fetch(`${AUTH_API_BASE_URL}/register`, {
       method: "POST",
       body: formData,
       cache: "no-store",
     });
-
-    // const response = await apiCall("register", {
-    //   method: "POST",
-    //   body: formData,
-    // });
-
-    console.log({ response });
 
     if (response.status !== 200) {
       return {

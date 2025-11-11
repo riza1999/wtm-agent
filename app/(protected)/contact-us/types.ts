@@ -15,17 +15,17 @@ export const contactUsSchema = z
     name: z.string().min(1, "Name is required"),
     email: z.string().email("Please enter a valid email"),
     subject: z.string().min(1, "Subject is required"),
-    inquiryType: z.enum(["general", "booking"], {
+    type: z.enum(["general", "booking"], {
       required_error: "Please select an inquiry type",
     }),
     message: z.string().min(10, "Message must be at least 10 characters"),
-    bookingId: z.string().optional(),
-    subBookingId: z.string().optional(),
+    booking_code: z.string().optional(),
+    sub_booking_code: z.string().optional(),
   })
   .refine(
     (data) => {
-      if (data.inquiryType === "booking") {
-        return data.bookingId && data.bookingId.length > 0;
+      if (data.type === "booking") {
+        return data.booking_code && data.booking_code.length > 0;
       }
       return true;
     },

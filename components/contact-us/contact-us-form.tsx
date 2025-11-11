@@ -2,11 +2,14 @@
 
 import { submitContactUs } from "@/app/(protected)/contact-us/actions";
 import {
-  BookingOption,
+  fetchUserBookings,
+  fetchUserSubBookings,
+} from "@/app/(protected)/contact-us/fetch";
+import {
   ContactUsSchema,
   contactUsSchema,
-  UserAccountData,
 } from "@/app/(protected)/contact-us/types";
+import { fetchAccountProfile } from "@/app/(protected)/settings/fetch";
 import { Button } from "@/components/ui/button";
 import {
   Form,
@@ -27,59 +30,78 @@ import {
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { useQuery } from "@tanstack/react-query";
 import { Loader, Mail } from "lucide-react";
 import { useEffect, useState } from "react";
 import { useForm } from "react-hook-form";
 import { toast } from "sonner";
 
 interface ContactUsFormProps {
-  userAccount: UserAccountData;
-  bookingOptions: BookingOption[];
-  initialBookingId?: string;
+  urlBookingId?: string;
 }
 
-const ContactUsForm = ({ userAccount, bookingOptions, initialBookingId }: ContactUsFormProps) => {
+const ContactUsForm = ({ urlBookingId }: ContactUsFormProps) => {
   const [isLoading, setIsLoading] = useState(false);
-  const [selectedBooking, setSelectedBooking] = useState<BookingOption | null>(
-    null,
-  );
+
+  const {
+    data: dataProfile,
+    isLoading: isLoadingProfile,
+    isError: isErrorProfile,
+  } = useQuery({
+    queryKey: ["profile"],
+    queryFn: fetchAccountProfile,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    retry: 2,
+  });
 
   const form = useForm<ContactUsSchema>({
     resolver: zodResolver(contactUsSchema),
-    defaultValues: {
-      name: userAccount.name,
-      email: userAccount.email,
+    values: {
+      name: dataProfile?.data.full_name || "",
+      email: dataProfile?.data.email || "",
       subject: "",
-      inquiryType: initialBookingId ? "booking" : "general",
+      type: urlBookingId ? "booking" : "general",
       message: "",
-      bookingId: initialBookingId || "",
-      subBookingId: "",
+      booking_code: urlBookingId || "",
+      sub_booking_code: "",
     },
   });
 
-  const inquiryType = form.watch("inquiryType");
-  const bookingId = form.watch("bookingId");
+  const type = form.watch("type");
 
-  // Update selected booking when bookingId changes
-  useEffect(() => {
-    if (bookingId) {
-      const booking = bookingOptions.find((b) => b.value === bookingId);
-      setSelectedBooking(booking || null);
-      // Reset sub booking when main booking changes
-      form.setValue("subBookingId", "");
-    } else {
-      setSelectedBooking(null);
-    }
-  }, [bookingId, bookingOptions, form]);
+  const {
+    data: dataBooking,
+    isLoading: isLoadingBooking,
+    isError: isErrorBooking,
+  } = useQuery({
+    queryKey: ["booking"],
+    queryFn: fetchUserBookings,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    retry: 2,
+    enabled: type === "booking",
+  });
+
+  const booking_code = form.watch("booking_code");
+
+  const {
+    data: dataSubBookings,
+    isLoading: isLoadingSubBookings,
+    isError: isErrorSubBookings,
+  } = useQuery({
+    queryKey: ["subBookings", booking_code],
+    queryFn: () => fetchUserSubBookings(booking_code || ""),
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    retry: 2,
+    enabled: !!booking_code,
+  });
 
   // Clear booking fields when inquiry type changes to general
   useEffect(() => {
-    if (inquiryType === "general") {
-      form.setValue("bookingId", "");
-      form.setValue("subBookingId", "");
-      setSelectedBooking(null);
+    if (type === "general") {
+      form.setValue("booking_code", "");
+      form.setValue("sub_booking_code", "");
     }
-  }, [inquiryType, form]);
+  }, [type, form]);
 
   async function onSubmit(values: ContactUsSchema) {
     setIsLoading(true);
@@ -90,15 +112,14 @@ const ContactUsForm = ({ userAccount, bookingOptions, initialBookingId }: Contac
       if (result.success) {
         toast.success(result.message);
         form.reset({
-          name: userAccount.name,
-          email: userAccount.email,
+          name: dataProfile?.data.full_name,
+          email: dataProfile?.data.email,
           subject: "",
-          inquiryType: "general",
+          type: "general",
           message: "",
-          bookingId: "",
-          subBookingId: "",
+          booking_code: "",
+          sub_booking_code: "",
         });
-        setSelectedBooking(null);
       } else {
         toast.error(result.message);
       }
@@ -180,7 +201,7 @@ const ContactUsForm = ({ userAccount, bookingOptions, initialBookingId }: Contac
             />
             <FormField
               control={form.control}
-              name="inquiryType"
+              name="type"
               render={({ field }) => (
                 <FormItem>
                   <FormLabel className="gap-0">
@@ -205,11 +226,11 @@ const ContactUsForm = ({ userAccount, bookingOptions, initialBookingId }: Contac
           </div>
 
           {/* 4th Row: Booking Fields (Conditional) */}
-          {inquiryType === "booking" && (
+          {type === "booking" && dataBooking && (
             <div className="grid grid-cols-1 gap-4 sm:grid-cols-2">
               <FormField
                 control={form.control}
-                name="bookingId"
+                name="booking_code"
                 render={({ field }) => (
                   <FormItem>
                     <FormLabel className="gap-0">
@@ -222,7 +243,7 @@ const ContactUsForm = ({ userAccount, bookingOptions, initialBookingId }: Contac
                         </SelectTrigger>
                       </FormControl>
                       <SelectContent>
-                        {bookingOptions.map((booking) => (
+                        {dataBooking.map((booking) => (
                           <SelectItem key={booking.value} value={booking.value}>
                             {booking.label}
                           </SelectItem>
@@ -234,10 +255,10 @@ const ContactUsForm = ({ userAccount, bookingOptions, initialBookingId }: Contac
                 )}
               />
 
-              {selectedBooking && selectedBooking.subBookings && (
+              {booking_code && dataSubBookings && (
                 <FormField
                   control={form.control}
-                  name="subBookingId"
+                  name="sub_booking_code"
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Specific Booking Item (Optional)</FormLabel>
@@ -249,7 +270,7 @@ const ContactUsForm = ({ userAccount, bookingOptions, initialBookingId }: Contac
                           <SelectTrigger
                             className="w-full bg-white"
                             value={field.value}
-                            onReset={() => form.resetField("subBookingId")}
+                            onReset={() => form.resetField("sub_booking_code")}
                           >
                             <SelectValue placeholder="Choose specific item (optional)" />
                           </SelectTrigger>
@@ -262,7 +283,7 @@ const ContactUsForm = ({ userAccount, bookingOptions, initialBookingId }: Contac
                             Clear
                           </button>
                           <SelectSeparator /> */}
-                          {selectedBooking.subBookings?.map((subBooking) => (
+                          {dataSubBookings.map((subBooking) => (
                             <SelectItem
                               key={subBooking.value}
                               value={subBooking.value}

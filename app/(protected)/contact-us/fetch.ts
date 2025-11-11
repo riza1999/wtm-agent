@@ -1,4 +1,7 @@
-import { BookingOption, UserAccountData } from "./types";
+"use server";
+
+import { apiCall } from "@/lib/api";
+import { UserAccountData } from "./types";
 
 export async function fetchUserAccount(): Promise<UserAccountData> {
   // Simulate fetching user account data
@@ -12,46 +15,58 @@ export async function fetchUserAccount(): Promise<UserAccountData> {
   };
 }
 
-export async function fetchUserBookings(): Promise<BookingOption[]> {
-  // Simulate fetching user's booking history
-  // In a real application, this would fetch from your booking database
-  await new Promise((resolve) => setTimeout(resolve, 200));
+export async function fetchUserBookings(): Promise<
+  { label: string; value: string }[]
+> {
+  return [
+    { label: "Hotel Bali Paradise - Booking #BK001", value: "BK-001" },
+    { label: "Hotel Jakarta Grand - Booking #BK002", value: "BK-002" },
+    { label: "Hotel Yogyakarta Heritage - Booking #BK003", value: "BK-003" },
+    { label: "Hotel Bandung Hills - Booking #BK004", value: "BK-004" },
+  ];
+
+  const url = `bookings/ids`;
+  const apiResponse = await apiCall<string[]>(url);
+
+  console.log({ data: apiResponse.data });
+
+  if (apiResponse.status === 200 && Array.isArray(apiResponse.data)) {
+    return apiResponse.data.map((id) => ({
+      label: id,
+      value: id,
+    }));
+  }
+
+  return [];
+}
+
+export async function fetchUserSubBookings(
+  booking_id: string,
+): Promise<{ label: string; value: string }[]> {
+  void booking_id;
 
   return [
     {
-      value: "BK-001",
-      label: "Hotel Bali Paradise - Booking #BK001",
-      subBookings: [
-        { value: "SUB001", label: "Deluxe Room - Check-in: 2024-01-15" },
-        { value: "SUB002", label: "Spa Package - Date: 2024-01-16" },
-        { value: "SUB003", label: "Airport Transfer - Date: 2024-01-15" },
-      ],
+      label: `Booking ${booking_id}-SB-001`,
+      value: `${booking_id}-SB-001`,
     },
     {
-      value: "BK-002",
-      label: "Hotel Jakarta Grand - Booking #BK002",
-      subBookings: [
-        { value: "SUB004", label: "Executive Suite - Check-in: 2024-02-10" },
-        { value: "SUB005", label: "Conference Room - Date: 2024-02-11" },
-      ],
-    },
-    {
-      value: "BK-003",
-      label: "Hotel Yogyakarta Heritage - Booking #BK003",
-      subBookings: [
-        { value: "SUB006", label: "Standard Room - Check-in: 2024-03-05" },
-        { value: "SUB007", label: "City Tour Package - Date: 2024-03-06" },
-        { value: "SUB008", label: "Cultural Workshop - Date: 2024-03-07" },
-        { value: "SUB009", label: "Return Transfer - Date: 2024-03-08" },
-      ],
-    },
-    {
-      value: "BK-004",
-      label: "Hotel Bandung Hills - Booking #BK004",
-      subBookings: [
-        { value: "SUB010", label: "Mountain View Room - Check-in: 2024-04-20" },
-        { value: "SUB011", label: "Hiking Tour - Date: 2024-04-21" },
-      ],
+      label: `Booking ${booking_id}-SB-002`,
+      value: `${booking_id}-SB-002`,
     },
   ];
+
+  const url = `bookings/${booking_id}/sub-ids`;
+  const apiResponse = await apiCall<string[]>(url);
+
+  console.log({ data: apiResponse.data });
+
+  if (apiResponse.status === 200 && Array.isArray(apiResponse.data)) {
+    return apiResponse.data.map((id) => ({
+      label: id,
+      value: id,
+    }));
+  }
+
+  return [];
 }

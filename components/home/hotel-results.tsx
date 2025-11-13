@@ -17,6 +17,7 @@ import {
 import { formatCurrency } from "@/lib/format";
 import { formatUrl } from "@/lib/url-utils";
 import { ChevronsLeft, ChevronsRight, Search } from "lucide-react";
+import { format } from "date-fns";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -247,13 +248,25 @@ const HotelCard = ({ hotel }: HotelCardProps) => {
   const searchParams = useSearchParams();
   const [imgError, setImgError] = React.useState(false);
 
+  // Get today and tomorrow dates
+  const today = new Date();
+  const tomorrow = new Date(today);
+  tomorrow.setDate(tomorrow.getDate() + 1);
+
+  // Create a new URLSearchParams object with default date values
   const params = new URLSearchParams(searchParams.toString());
   params.delete("location");
-  const stringQuery = params.toString();
 
-  const href = stringQuery
-    ? `/hotel/${hotel.id}?${stringQuery}`
-    : `/hotel/${hotel.id}`;
+  // Add default values for 'from' and 'to' parameters if not present
+  if (!params.has("from")) {
+    params.set("from", format(today, "yyyy-MM-dd"));
+  }
+  if (!params.has("to")) {
+    params.set("to", format(tomorrow, "yyyy-MM-dd"));
+  }
+
+  const stringQuery = params.toString();
+  const href = `/hotel/${hotel.id}?${stringQuery}`;
 
   return (
     <Link href={href}>

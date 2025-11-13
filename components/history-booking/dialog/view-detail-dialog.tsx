@@ -190,7 +190,7 @@ const ViewDetailDialog: React.FC<ViewDetailDialogProps> = ({
                               {detail.hotel_name}
                             </div>
                             <div className="text-muted-foreground text-sm capitalize">
-                              {detail.additional.join(", ")}
+                              {detail.additional?.join(", ")}
                             </div>
                           </div>
                         </TableCell>
@@ -292,7 +292,7 @@ const ViewDetailDialog: React.FC<ViewDetailDialogProps> = ({
               </Table>
               <div className="mt-4 flex justify-center gap-2 py-2">
                 <Button asChild>
-                  <Link href={`/contact-us?bookingId=${booking?.booking_id}`}>
+                  <Link href={`/contact-us?bookingId=${booking?.booking_code}`}>
                     Inquire This Booking
                   </Link>
                 </Button>
@@ -336,7 +336,7 @@ const ViewDetailDialog: React.FC<ViewDetailDialogProps> = ({
         onConfirm={handleCancelConfirm}
         onCancel={handleCancelDialogClose}
         isLoading={isLoading}
-        title={`Are you sure you want to cancel booking ${booking?.booking_id}?`}
+        title={`Are you sure you want to cancel booking ${booking?.booking_code}?`}
         description={`This action cannot be undone and the booking will be permanently cancelled.`}
       />
     </Dialog>

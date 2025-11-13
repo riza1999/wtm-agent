@@ -7,7 +7,7 @@ import { fetchCart } from "./fetch";
 const CartPage = async () => {
   // Fetch booking details only since guest data is now handled by context
   const { data: cartData } = await fetchCart();
-  const guests = cartData.guest;
+  const guests = cartData?.guest;
 
   return (
     <GuestProvider>
@@ -16,9 +16,12 @@ const CartPage = async () => {
           <React.Suspense fallback="Loading...">
             <ContactDetailsSection guests={guests} cart_id={cartData.id} />
           </React.Suspense>
-          <React.Suspense fallback="Loading...">
-            <BookingDetailsSection cartData={cartData} />
-          </React.Suspense>
+          {cartData.detail && (
+            <React.Suspense fallback="Loading...">
+              <BookingDetailsSection cartData={cartData} />
+            </React.Suspense>
+          )}
+          {!cartData.detail && <p>No cart available.</p>}
         </div>
       </div>
     </GuestProvider>

@@ -1,7 +1,14 @@
 "use client";
 
+import {
+  checkoutCart,
+  removeFromCart,
+  selectGuest,
+} from "@/app/(protected)/cart/actions";
+import { fetchCart } from "@/app/(protected)/cart/fetch";
 import { BookingDetail } from "@/app/(protected)/cart/types";
 import { HistoryBooking } from "@/app/(protected)/history-booking/types";
+import ViewInvoiceDialog from "@/components/history-booking/dialog/view-invoice-dialog";
 import { Button } from "@/components/ui/button";
 import { Card, CardFooter } from "@/components/ui/card";
 import {
@@ -11,20 +18,13 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { IconMoon } from "@tabler/icons-react";
+import { useQueryClient } from "@tanstack/react-query";
 import { format } from "date-fns";
 import { Clock, Loader2, Trash2 } from "lucide-react";
 import Image from "next/image";
 import React, { useState, useTransition } from "react";
 import { toast } from "sonner";
-import { IconMoon } from "@tabler/icons-react";
-import ViewInvoiceDialog from "@/components/history-booking/dialog/view-invoice-dialog";
-import { fetchCart } from "@/app/(protected)/cart/fetch";
-import {
-  checkoutCart,
-  removeFromCart,
-  selectGuest,
-} from "@/app/(protected)/cart/actions";
-import { useQueryClient } from "@tanstack/react-query";
 
 interface BookingDetailsSectionProps {
   cartData: Awaited<ReturnType<typeof fetchCart>>["data"];
@@ -37,7 +37,7 @@ const BookingDetailsSection = ({ cartData }: BookingDetailsSectionProps) => {
         <h2 className="text-2xl font-bold">Booking Details</h2>
       </div>
       <div className="grid gap-6 sm:gap-8">
-        {cartData.detail.map((detail) => (
+        {cartData?.detail?.map((detail) => (
           <HotelRoomCard
             key={detail.id}
             bookingDetails={detail}

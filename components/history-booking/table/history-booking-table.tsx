@@ -4,18 +4,6 @@ import { getData } from "@/app/(protected)/history-booking/fetch";
 import { HistoryBooking } from "@/app/(protected)/history-booking/types";
 import { DataTable } from "@/components/data-table/data-table";
 import { DataTableToolbar } from "@/components/data-table/data-table-toolbar";
-import { useDataTable } from "@/hooks/use-data-table";
-import {
-  fetchListBookingStatus,
-  fetchListPaymentStatus,
-} from "@/server/general";
-import type { DataTableRowAction } from "@/types/data-table";
-import React, { useTransition } from "react";
-import ViewDetailDialog from "../dialog/view-detail-dialog";
-import ViewInvoiceDialog from "../dialog/view-invoice-dialog";
-import ViewNotesDialog from "../dialog/view-notes-dialog";
-import ViewReceiptDialog from "../dialog/view-receipt-dialog";
-import { getHistoryBookingTableColumns } from "./history-booking-columns";
 import {
   Select,
   SelectContent,
@@ -23,7 +11,19 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { useDataTable } from "@/hooks/use-data-table";
+import {
+  fetchListBookingStatus,
+  fetchListPaymentStatus,
+} from "@/server/general";
+import type { DataTableRowAction } from "@/types/data-table";
 import { parseAsString, useQueryState } from "nuqs";
+import React, { useTransition } from "react";
+import ViewDetailDialog from "../dialog/view-detail-dialog";
+import ViewInvoiceDialog from "../dialog/view-invoice-dialog";
+import ViewNotesDialog from "../dialog/view-notes-dialog";
+import ViewReceiptDialog from "../dialog/view-receipt-dialog";
+import { getHistoryBookingTableColumns } from "./history-booking-columns";
 
 interface HistoryBookingTableProps {
   promises: Promise<
@@ -41,6 +41,8 @@ const HistoryBookingTable = ({ promises }: HistoryBookingTableProps) => {
     React.use(promises);
   const [rowAction, setRowAction] =
     React.useState<DataTableRowAction<HistoryBooking> | null>(null);
+
+  console.log({ data });
 
   const columns = React.useMemo(
     () =>

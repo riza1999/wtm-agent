@@ -36,11 +36,17 @@ export const getData = async ({
   //   ],
   // };
 
-  const queryString = buildQueryParams(searchParams);
+  const searchParamsWithDefaults = {
+    ...searchParams,
+    limit: searchParams.limit || "10",
+    page: searchParams.page || "1",
+    search_by: searchParams.search_by || "guest_name",
+  };
+
+  const queryString = buildQueryParams(searchParamsWithDefaults);
+
   const url = `/bookings/history${queryString ? `?${queryString}` : ""}`;
   const apiResponse = await apiCall<HistoryBooking[]>(url);
-
-  console.log({ data: apiResponse.data });
 
   return apiResponse;
 };

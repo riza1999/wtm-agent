@@ -31,21 +31,6 @@ import {
   TooltipTrigger,
 } from "../ui/tooltip";
 
-const DISTRICT_OPTIONS = [
-  { id: "jakarta", name: "Jakarta" },
-  { id: "bekasi", name: "Bekasi" },
-  { id: "depok", name: "Depok" },
-  { id: "bogor", name: "Bogor" },
-  { id: "denpasar", name: "Denpasar" },
-  { id: "surabaya", name: "Surabaya" },
-  { id: "bali", name: "Bali" },
-  { id: "bandung", name: "Bandung" },
-  { id: "semarang", name: "Semarang" },
-  { id: "makassar", name: "Makassar" },
-  { id: "palembang", name: "Palembang" },
-  { id: "medan", name: "Medan" },
-];
-
 function DistrictCard({
   filter_districts,
 }: {
@@ -230,25 +215,6 @@ function StarRatingCard({
     </Card>
   );
 }
-
-const BEDTYPES = [
-  {
-    id: "king",
-    label: "King Size Bed",
-  },
-  {
-    id: "queen",
-    label: "Queen Size Bed",
-  },
-  {
-    id: "twin",
-    label: "Twin Bed",
-  },
-  {
-    id: "bunk",
-    label: "Bunk Bed",
-  },
-];
 
 export function BedTypeCard({
   filter_bed_types,

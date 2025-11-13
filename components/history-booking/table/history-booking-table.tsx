@@ -16,6 +16,14 @@ import ViewInvoiceDialog from "../dialog/view-invoice-dialog";
 import ViewNotesDialog from "../dialog/view-notes-dialog";
 import ViewReceiptDialog from "../dialog/view-receipt-dialog";
 import { getHistoryBookingTableColumns } from "./history-booking-columns";
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from "@/components/ui/select";
+import { parseAsString, useQueryState } from "nuqs";
 
 interface HistoryBookingTableProps {
   promises: Promise<
@@ -54,11 +62,33 @@ const HistoryBookingTable = ({ promises }: HistoryBookingTableProps) => {
     startTransition,
   });
 
+  const [searchBy, setSearchBy] = useQueryState(
+    "search_by",
+    parseAsString.withDefault("guest_name").withOptions({ shallow: false }),
+  );
+
   return (
     <>
       <div className="relative">
         <DataTable table={table} isPending={isPending}>
-          <DataTableToolbar table={table} isPending={isPending} />
+          <DataTableToolbar
+            table={table}
+            isPending={isPending}
+            reverseOrderChild
+          >
+            <Select
+              defaultValue={searchBy}
+              onValueChange={(value) => setSearchBy(value)}
+            >
+              <SelectTrigger className="!h-8 bg-white">
+                <SelectValue placeholder="Select search by" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="guest_name">Guest Name</SelectItem>
+                <SelectItem value="booking_id">ID Booking</SelectItem>
+              </SelectContent>
+            </Select>
+          </DataTableToolbar>
         </DataTable>
       </div>
       <ViewInvoiceDialog

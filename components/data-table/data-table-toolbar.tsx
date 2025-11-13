@@ -14,6 +14,7 @@ import { cn } from "@/lib/utils";
 interface DataTableToolbarProps<TData> extends React.ComponentProps<"div"> {
   table: Table<TData>;
   isPending?: boolean;
+  reverseOrderChild?: boolean;
 }
 
 export function DataTableToolbar<TData>({
@@ -21,6 +22,7 @@ export function DataTableToolbar<TData>({
   children,
   className,
   isPending = false,
+  reverseOrderChild = false,
   ...props
 }: DataTableToolbarProps<TData>) {
   const isFiltered = table.getState().columnFilters.length > 0;
@@ -36,7 +38,7 @@ export function DataTableToolbar<TData>({
           if (aIsText === bIsText) return 0;
           return aIsText ? -1 : 1;
         }),
-    [table]
+    [table],
   );
 
   const onReset = React.useCallback(() => {
@@ -49,10 +51,16 @@ export function DataTableToolbar<TData>({
       aria-orientation="horizontal"
       className={cn(
         "flex w-full items-start justify-between gap-2 p-1",
-        className
+        className,
       )}
       {...props}
     >
+      {reverseOrderChild && (
+        <div className="flex items-center gap-2">
+          {children}
+          {/* <DataTableViewOptions table={table} /> */}
+        </div>
+      )}
       <div className="flex flex-1 flex-wrap items-center gap-2">
         {columns.map((column) => (
           <DataTableToolbarFilter key={column.id} column={column} />
@@ -74,10 +82,12 @@ export function DataTableToolbar<TData>({
         )}
       </div>
 
-      <div className="flex items-center gap-2">
-        {children}
-        {/* <DataTableViewOptions table={table} /> */}
-      </div>
+      {!reverseOrderChild && (
+        <div className="flex items-center gap-2">
+          {children}
+          {/* <DataTableViewOptions table={table} /> */}
+        </div>
+      )}
     </div>
   );
 }
@@ -101,7 +111,7 @@ function DataTableToolbarFilter<TData>({
               placeholder={columnMeta.placeholder ?? columnMeta.label}
               value={(column.getFilterValue() as string) ?? ""}
               onChange={(event) => column.setFilterValue(event.target.value)}
-              className="h-8 w-40 lg:w-56 bg-white"
+              className="h-8 w-40 bg-white lg:w-56"
             />
           );
 
@@ -117,7 +127,7 @@ function DataTableToolbarFilter<TData>({
                 className={cn("h-8 w-[120px]", columnMeta.unit && "pr-8")}
               />
               {columnMeta.unit && (
-                <span className="absolute top-0 right-0 bottom-0 flex items-center rounded-r-md bg-accent px-2 text-muted-foreground text-sm">
+                <span className="bg-accent text-muted-foreground absolute top-0 right-0 bottom-0 flex items-center rounded-r-md px-2 text-sm">
                   {columnMeta.unit}
                 </span>
               )}

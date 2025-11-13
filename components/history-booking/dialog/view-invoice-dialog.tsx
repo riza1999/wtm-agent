@@ -37,8 +37,6 @@ const ViewInvoiceDialog: React.FC<ViewInvoiceDialogProps> = ({
   onOpenChange,
   booking,
 }) => {
-  console.log({ booking });
-
   const [state, setState] = useState<InvoiceDialogState>({
     isGeneratingPDF: false,
     invoiceData: null,

@@ -59,14 +59,14 @@ export function getHistoryBookingTableColumns({
       enableHiding: false,
       meta: {
         label: "Search",
-        placeholder: "Search guest name or booking ID...",
+        placeholder: "Search ...",
         variant: "text",
       },
       enableColumnFilter: true,
     },
     {
-      id: "booking_id",
-      accessorKey: "booking_id",
+      id: "booking_code",
+      accessorKey: "booking_code",
       header: ({ column }) => (
         <DataTableColumnHeader column={column} title="ID Booking" />
       ),

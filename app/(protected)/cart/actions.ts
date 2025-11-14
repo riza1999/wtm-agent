@@ -1,11 +1,10 @@
 "use server";
 
-import { User } from "@/types/user";
-import { getContactDetails, saveContactDetails } from "./fetch";
-import { revalidatePath } from "next/cache";
-import { ActionResponse } from "@/types";
 import { apiCall } from "@/lib/api";
-import { delay } from "@/lib/utils";
+import { ActionResponse } from "@/types";
+import { User } from "@/types/user";
+import { revalidatePath } from "next/cache";
+import { getContactDetails, saveContactDetails } from "./fetch";
 
 export async function addUserAsGuest(user: User) {
   // Simulate API call delay
@@ -116,48 +115,48 @@ export async function removeFromCart(
 }
 
 export async function checkoutCart(): Promise<ActionResponse<void>> {
-  await delay(1000);
+  // await delay(1000);
 
-  return {
-    success: true,
-    message: "Cart has been successfully checked out",
-  };
+  // return {
+  //   success: true,
+  //   message: "Cart has been successfully checked out",
+  // };
 
-  // try {
-  //   const response = await apiCall(`bookings/checkout`, {
-  //     method: "POST",
-  //   });
+  try {
+    const response = await apiCall(`bookings/checkout`, {
+      method: "POST",
+    });
 
-  //   if (response.status !== 200) {
-  //     return {
-  //       success: false,
-  //       message: response.message || "Failed to checkout cart",
-  //     };
-  //   }
+    if (response.status !== 200) {
+      return {
+        success: false,
+        message: response.message || "Failed to checkout cart",
+      };
+    }
 
-  //   revalidatePath("/cart", "layout");
+    revalidatePath("/cart", "layout");
 
-  //   return {
-  //     success: true,
-  //     message: response.message || "Cart has been successfully checked out",
-  //   };
-  // } catch (error) {
-  //   console.error("Error removing room from cart:", error);
+    return {
+      success: true,
+      message: response.message || "Cart has been successfully checked out",
+    };
+  } catch (error) {
+    console.error("Error removing room from cart:", error);
 
-  //   // Handle API error responses with specific messages
-  //   if (error && typeof error === "object" && "message" in error) {
-  //     return {
-  //       success: false,
-  //       message: error.message as string,
-  //     };
-  //   }
+    // Handle API error responses with specific messages
+    if (error && typeof error === "object" && "message" in error) {
+      return {
+        success: false,
+        message: error.message as string,
+      };
+    }
 
-  //   return {
-  //     success: false,
-  //     message:
-  //       error instanceof Error ? error.message : "Failed to checkout cart",
-  //   };
-  // }
+    return {
+      success: false,
+      message:
+        error instanceof Error ? error.message : "Failed to checkout cart",
+    };
+  }
 }
 
 export const addGuest = async (input: { cart_id: number; guest: string }) => {

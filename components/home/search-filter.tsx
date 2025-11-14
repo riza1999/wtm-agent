@@ -23,8 +23,8 @@ import {
   ChevronsUpDown,
   CirclePercent,
   MapPin,
-  Users,
   Search,
+  Users,
 } from "lucide-react";
 
 import {
@@ -37,6 +37,12 @@ import {
 import { useState } from "react";
 import { toast } from "sonner";
 import {
+  Accordion,
+  AccordionContent,
+  AccordionItem,
+  AccordionTrigger,
+} from "../ui/accordion";
+import {
   Command,
   CommandEmpty,
   CommandGroup,
@@ -45,12 +51,6 @@ import {
   CommandList,
 } from "../ui/command";
 import { Input } from "../ui/input";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "../ui/accordion";
 
 const SearchFilter = () => {
   return (
@@ -426,7 +426,7 @@ const PromoButton = () => {
   );
 
   // Filter promos based on search term
-  const filteredPromos = promoData.filter(
+  const filteredPromos = promoData?.filter(
     (promo) =>
       promo.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
       promo.code.toLowerCase().includes(searchTerm.toLowerCase()) ||

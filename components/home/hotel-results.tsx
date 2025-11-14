@@ -16,8 +16,8 @@ import {
 } from "@/components/ui/pagination";
 import { formatCurrency } from "@/lib/format";
 import { formatUrl } from "@/lib/url-utils";
-import { ChevronsLeft, ChevronsRight, Search } from "lucide-react";
 import { format } from "date-fns";
+import { ChevronsLeft, ChevronsRight, Search } from "lucide-react";
 import Image from "next/image";
 import Link from "next/link";
 import { useSearchParams } from "next/navigation";
@@ -33,7 +33,7 @@ const HotelResults = ({ promise }: HotelResultsProps) => {
 
   const { status } = hotelsData;
 
-  if (status !== 200) return null;
+  if (status !== 200) return "Error loading data";
 
   return (
     <section className="grid auto-rows-min grid-cols-1 gap-4 sm:grid-cols-2 md:col-span-3 lg:grid-cols-3">

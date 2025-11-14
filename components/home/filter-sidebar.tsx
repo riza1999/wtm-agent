@@ -63,7 +63,7 @@ function DistrictCard({
   const handleDistrictChange = (districtId: string) => {
     const currentDistricts = selectedDistricts || [];
     const newDistricts = currentDistricts.includes(districtId)
-      ? currentDistricts.filter((id) => id !== districtId)
+      ? currentDistricts?.filter((id) => id !== districtId)
       : [...currentDistricts, districtId];
     setSelectedDistricts(newDistricts);
   };
@@ -197,7 +197,7 @@ function StarRatingCard({
                 return checked
                   ? setStar([...star, rating.rating.toString()])
                   : setStar(
-                      star.filter(
+                      star?.filter(
                         (value) => value !== rating.rating.toString(),
                       ),
                     );
@@ -259,7 +259,7 @@ export function BedTypeCard({
                 return checked
                   ? setBedType([...bedType, String(type.bed_type_id)])
                   : setBedType(
-                      bedType.filter(
+                      bedType?.filter(
                         (value) => value !== String(type.bed_type_id),
                       ),
                     );
@@ -319,7 +319,7 @@ function BedroomTypeCard({
                       String(type.total_bed_rooms),
                     ])
                   : setBedRoomType(
-                      bedRoomType.filter(
+                      bedRoomType?.filter(
                         (value) => value !== String(type.total_bed_rooms),
                       ),
                     );

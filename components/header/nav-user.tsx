@@ -1,8 +1,13 @@
 "use client";
 
+import { fetchAccountProfile } from "@/app/(protected)/settings/fetch";
+import { useAuth } from "@/context/AuthContext";
+import { formatUrl } from "@/lib/url-utils";
+import { useQuery } from "@tanstack/react-query";
 import { ChevronsUpDown, LogOut, Settings } from "lucide-react";
 import { signOut } from "next-auth/react";
 import Link from "next/link";
+import { useRouter } from "next/navigation";
 import React from "react";
 import { toast } from "sonner";
 import { Avatar, AvatarFallback, AvatarImage } from "../ui/avatar";
@@ -17,16 +22,29 @@ import {
 } from "../ui/dropdown-menu";
 import { Spinner } from "../ui/spinner";
 
-export const NavUser = ({
-  user,
-}: {
-  user: {
-    name: string;
-    email: string;
-    avatar: string;
-  };
-}) => {
+export const NavUser = () => {
   const [isPending, startTransition] = React.useTransition();
+  const { accessToken } = useAuth();
+  const router = useRouter();
+
+  const isAuthenticated = !!accessToken;
+
+  const {
+    data: dataProfile,
+    isLoading: isLoadingProfile,
+    isError: isErrorProfile,
+  } = useQuery({
+    queryKey: ["profile"],
+    queryFn: fetchAccountProfile,
+    staleTime: 1000 * 60 * 5, // 5 minutes
+    retry: 2,
+  });
+
+  const user = {
+    name: dataProfile?.data.full_name || "User",
+    email: dataProfile?.data.email || "",
+    avatar: formatUrl(dataProfile?.data.photo_profile) || "",
+  };
 
   const handleLogout = async (
     event: React.MouseEvent | React.KeyboardEvent,
@@ -60,6 +78,28 @@ export const NavUser = ({
       }
     });
   };
+
+  const handleSignIn = () => {
+    router.push("/login");
+  };
+
+  if (isLoadingProfile) {
+    return <div className="h-10 w-10 animate-pulse rounded-full bg-gray-300" />;
+  }
+
+  if (!isAuthenticated) {
+    return (
+      <Button onClick={handleSignIn} variant={"ghost"}>
+        <Avatar className="h-8 w-8 rounded-lg">
+          <AvatarImage src={""} alt={"Not logged In"} />
+          <AvatarFallback className="rounded-lg"></AvatarFallback>
+        </Avatar>
+        <div className="grid flex-1 text-left text-sm leading-tight">
+          <span className="truncate font-medium">Sign in</span>
+        </div>
+      </Button>
+    );
+  }
 
   return (
     <DropdownMenu>

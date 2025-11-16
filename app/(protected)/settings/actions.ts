@@ -81,7 +81,7 @@ export async function changePassword(
       };
     }
 
-    revalidatePath("/settings", "layout");
+    // revalidatePath("/settings", "layout");
 
     return {
       success: true,

@@ -3,7 +3,7 @@
 import { fetchAccountProfile } from "@/app/(protected)/settings/fetch";
 import { useAuth } from "@/context/AuthContext";
 import { formatUrl } from "@/lib/url-utils";
-import { useQuery } from "@tanstack/react-query";
+import { useQuery, useQueryClient } from "@tanstack/react-query";
 import { ChevronsUpDown, LogOut, Settings } from "lucide-react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
@@ -25,6 +25,7 @@ export const NavUser = () => {
   const [isPending, startTransition] = React.useTransition();
   const { accessToken, logout } = useAuth();
   const router = useRouter();
+  const queryClient = useQueryClient();
 
   const isAuthenticated = !!accessToken;
 
@@ -53,6 +54,7 @@ export const NavUser = () => {
     startTransition(async () => {
       try {
         await logout();
+        queryClient.clear();
         toast.success("Logout successfully");
       } catch (error) {
         console.error("Logout error", error);

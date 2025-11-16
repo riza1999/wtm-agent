@@ -1,11 +1,8 @@
 import { QueryProvider } from "@/components/providers/query-provider";
-import { AuthSessionProvider } from "@/components/providers/session-provider";
 import { ThemeProvider } from "@/components/theme-provider";
 import { Toaster } from "@/components/ui/sonner";
 import { AuthProvider } from "@/context/AuthContext";
-import authOptions from "@/lib/auth";
 import type { Metadata } from "next";
-import { getServerSession } from "next-auth";
 import { Geist, Geist_Mono } from "next/font/google";
 import { NuqsAdapter } from "nuqs/adapters/next/app";
 import "./globals.css";
@@ -32,8 +29,6 @@ export default async function RootLayout({
 }: Readonly<{
   children: React.ReactNode;
 }>) {
-  const session = await getServerSession(authOptions);
-
   return (
     <html lang="en" suppressHydrationWarning>
       <body
@@ -41,19 +36,17 @@ export default async function RootLayout({
       >
         <NuqsAdapter>
           <QueryProvider>
-            <AuthSessionProvider session={session}>
-              <AuthProvider>
-                <ThemeProvider
-                  attribute="class"
-                  defaultTheme="light"
-                  enableSystem={false}
-                  disableTransitionOnChange
-                >
-                  {children}
-                  <Toaster />
-                </ThemeProvider>
-              </AuthProvider>
-            </AuthSessionProvider>
+            <AuthProvider>
+              <ThemeProvider
+                attribute="class"
+                defaultTheme="light"
+                enableSystem={false}
+                disableTransitionOnChange
+              >
+                {children}
+                <Toaster />
+              </ThemeProvider>
+            </AuthProvider>
           </QueryProvider>
         </NuqsAdapter>
       </body>

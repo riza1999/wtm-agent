@@ -5,7 +5,6 @@ import { useAuth } from "@/context/AuthContext";
 import { formatUrl } from "@/lib/url-utils";
 import { useQuery } from "@tanstack/react-query";
 import { ChevronsUpDown, LogOut, Settings } from "lucide-react";
-import { signOut } from "next-auth/react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
 import React from "react";
@@ -24,7 +23,7 @@ import { Spinner } from "../ui/spinner";
 
 export const NavUser = () => {
   const [isPending, startTransition] = React.useTransition();
-  const { accessToken } = useAuth();
+  const { accessToken, logout } = useAuth();
   const router = useRouter();
 
   const isAuthenticated = !!accessToken;
@@ -53,28 +52,13 @@ export const NavUser = () => {
 
     startTransition(async () => {
       try {
-        const response = await fetch("/api/logout", {
-          method: "POST",
-        });
-        const data = await response.json().catch(() => null);
-        if (response.ok) {
-          toast.success(
-            (data && typeof data === "object" && "message" in data
-              ? (data as { message?: string }).message
-              : undefined) ?? "Logout successfully",
-          );
-        } else {
-          const message =
-            data && typeof data === "object" && "message" in data
-              ? (data as { message?: string }).message
-              : undefined;
-          toast.error(message ?? "Failed to logout from server");
-        }
+        await logout();
+        toast.success("Logout successfully");
       } catch (error) {
         console.error("Logout error", error);
         toast.error("Something went wrong while logging out");
       } finally {
-        await signOut({ callbackUrl: "/login" });
+        router.push("/login");
       }
     });
   };

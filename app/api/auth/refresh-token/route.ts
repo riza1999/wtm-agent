@@ -16,10 +16,12 @@ export async function GET(req: NextRequest) {
 
   const response = NextResponse.json(data, { status: res.status });
 
-  response.headers.set(
-    "set-cookie",
-    `access_token=${data.data.token}; Path=/; Max-Age=1740; HttpOnly`,
-  );
+  if (data.data) {
+    response.headers.set(
+      "set-cookie",
+      `access_token=${data.data.token}; Path=/; Max-Age=1740; HttpOnly`,
+    );
+  }
 
   return response;
 }

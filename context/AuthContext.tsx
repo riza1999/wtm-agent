@@ -33,7 +33,10 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
 
   const logout = async () => {
     try {
-      await api("/api/logout", { method: "POST" });
+      await api("/api/auth/logout", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
     } finally {
       setAccessToken(null);
       router.push("/login");

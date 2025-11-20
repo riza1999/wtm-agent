@@ -32,12 +32,14 @@ interface GetHistoryBookingTableColumnsProps {
   >;
   bookingStatusOptions: Awaited<ReturnType<typeof fetchListBookingStatus>>;
   paymentStatusOptions: Awaited<ReturnType<typeof fetchListPaymentStatus>>;
+  onUploadReceipt: (bookingId: string) => void;
 }
 
 export function getHistoryBookingTableColumns({
   setRowAction,
   bookingStatusOptions,
   paymentStatusOptions,
+  onUploadReceipt,
 }: GetHistoryBookingTableColumnsProps): ColumnDef<HistoryBooking>[] {
   return [
     {
@@ -161,16 +163,18 @@ export function getHistoryBookingTableColumns({
                   </Badge>
                 )}
               </DropdownMenuItem>
-              {row.original.payment_status === "paid" && (
+              {row.original.payment_status.toLowerCase() === "paid" && (
                 <DropdownMenuItem
                   onSelect={() => setRowAction({ row, variant: "receipt" })}
                 >
                   <IconReceipt className="mr-2 h-4 w-4" /> View Receipt
                 </DropdownMenuItem>
               )}
-              {row.original.payment_status === "unpaid" && (
+              {row.original.payment_status.toLowerCase() === "unpaid" && (
                 <DropdownMenuItem
-                  onSelect={() => setRowAction({ row, variant: "receipt" })}
+                  onSelect={() =>
+                    onUploadReceipt(String(row.original.booking_code))
+                  }
                 >
                   <IconCloudUpload className="mr-2 h-4 w-4" /> Upload Receipt
                 </DropdownMenuItem>

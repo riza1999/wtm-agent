@@ -19,6 +19,7 @@ import {
 import type { DataTableRowAction } from "@/types/data-table";
 import { parseAsString, useQueryState } from "nuqs";
 import React, { useTransition } from "react";
+import { UploadReceiptDialog } from "../dialog/upload-receipt-dialog";
 import ViewDetailDialog from "../dialog/view-detail-dialog";
 import ViewInvoiceDialog from "../dialog/view-invoice-dialog";
 import ViewNotesDialog from "../dialog/view-notes-dialog";
@@ -41,6 +42,9 @@ const HistoryBookingTable = ({ promises }: HistoryBookingTableProps) => {
     React.use(promises);
   const [rowAction, setRowAction] =
     React.useState<DataTableRowAction<HistoryBooking> | null>(null);
+  const [uploadReceiptOpen, setUploadReceiptOpen] = React.useState(false);
+  const [selectedBookingForReceipt, setSelectedBookingForReceipt] =
+    React.useState<{ bookingId?: string; subBookingId?: string } | null>(null);
 
   console.log({ data });
 
@@ -50,6 +54,10 @@ const HistoryBookingTable = ({ promises }: HistoryBookingTableProps) => {
         setRowAction,
         bookingStatusOptions,
         paymentStatusOptions,
+        onUploadReceipt: (bookingId: string) => {
+          setSelectedBookingForReceipt({ bookingId });
+          setUploadReceiptOpen(true);
+        },
       }),
     [],
   );
@@ -114,6 +122,16 @@ const HistoryBookingTable = ({ promises }: HistoryBookingTableProps) => {
         open={rowAction?.variant === "detail"}
         onOpenChange={() => setRowAction(null)}
         booking={rowAction?.row.original ?? null}
+      />
+      <UploadReceiptDialog
+        open={uploadReceiptOpen}
+        onOpenChange={setUploadReceiptOpen}
+        bookingId={selectedBookingForReceipt?.bookingId}
+        subBookingId={selectedBookingForReceipt?.subBookingId}
+        onSuccess={() => {
+          setSelectedBookingForReceipt(null);
+          startTransition(() => {});
+        }}
       />
     </>
   );

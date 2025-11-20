@@ -35,6 +35,7 @@ import { Ellipsis } from "lucide-react";
 import Link from "next/link";
 import React, { useState } from "react";
 import { toast } from "sonner";
+import { UploadReceiptDialog } from "./upload-receipt-dialog";
 import ViewInvoiceDialog from "./view-invoice-dialog";
 import ViewReceiptDialog from "./view-receipt-dialog";
 
@@ -53,6 +54,10 @@ const ViewDetailDialog: React.FC<ViewDetailDialogProps> = ({
   const [receiptDialogOpen, setReceiptDialogOpen] = useState(false);
   const [confirmDialogOpen, setConfirmDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [uploadReceiptOpen, setUploadReceiptOpen] = React.useState(false);
+  const [selectedSubBookingId, setSelectedSubBookingId] = React.useState<
+    string | null
+  >(null);
 
   const handleViewInvoice = (booking: HistoryBooking) => {
     setInvoiceDialogOpen(true);
@@ -89,6 +94,11 @@ const ViewDetailDialog: React.FC<ViewDetailDialogProps> = ({
 
   const handleCancelDialogClose = () => {
     setConfirmDialogOpen(false);
+  };
+
+  const handleUploadReceipt = (subBookingId: string) => {
+    setSelectedSubBookingId(subBookingId);
+    setUploadReceiptOpen(true);
   };
 
   const bookingDetails = booking?.detail || [];
@@ -268,7 +278,9 @@ const ViewDetailDialog: React.FC<ViewDetailDialogProps> = ({
                                 </DropdownMenuItem>
                               ) : (
                                 <DropdownMenuItem
-                                  onSelect={() => handleViewReceipt(booking)}
+                                  onSelect={() =>
+                                    handleUploadReceipt(detail.sub_booking_id)
+                                  }
                                 >
                                   <IconCloudUpload className="mr-2 h-4 w-4" />
                                   Upload Receipt
@@ -327,6 +339,15 @@ const ViewDetailDialog: React.FC<ViewDetailDialogProps> = ({
         open={receiptDialogOpen}
         onOpenChange={setReceiptDialogOpen}
         booking={booking}
+      />
+
+      <UploadReceiptDialog
+        open={uploadReceiptOpen}
+        onOpenChange={setUploadReceiptOpen}
+        subBookingId={selectedSubBookingId ?? undefined}
+        onSuccess={() => {
+          setSelectedSubBookingId(null);
+        }}
       />
 
       {/* Confirmation Dialog */}

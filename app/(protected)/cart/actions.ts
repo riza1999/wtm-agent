@@ -118,12 +118,6 @@ export async function removeFromCart(
 }
 
 export async function checkoutCart(): Promise<ActionResponse<void>> {
-  // await delay(1000);
-
-  // return {
-  //   success: true,
-  //   message: "Cart has been successfully checked out",
-  // };
   const cookieStore = await cookies();
   const accessToken = cookieStore.get("access_token")?.value || "";
 
@@ -134,6 +128,8 @@ export async function checkoutCart(): Promise<ActionResponse<void>> {
         Authorization: `Bearer ${accessToken}`,
       },
     });
+
+    console.log({ data: response.data });
 
     if (response.status !== 200) {
       return {

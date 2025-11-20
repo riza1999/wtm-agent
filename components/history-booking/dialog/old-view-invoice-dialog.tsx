@@ -11,9 +11,10 @@ import {
 } from "@/components/ui/dialog";
 import { LoadingSpinner } from "@/components/ui/loading-spinner";
 import { Separator } from "@/components/ui/separator";
-import { formatCurrency } from "@/lib/format";
+import { formatCurrency, formatDate } from "@/lib/format";
+import { InvoiceGenerator } from "@/lib/invoice-generator";
 import { PDFService } from "@/lib/pdf-service";
-import { InvoiceDialogState } from "@/types/invoice";
+import { ComprehensiveInvoiceData, InvoiceDialogState } from "@/types/invoice";
 import {
   IconChevronLeft,
   IconChevronRight,
@@ -22,63 +23,18 @@ import {
   IconFileText,
   IconRosetteDiscount,
 } from "@tabler/icons-react";
-import { format, isValid } from "date-fns";
-import React, { useState } from "react";
+import React, { useCallback, useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
-import { NewInvoiceData } from "./new-invoice-pdf-document";
-import { UploadReceiptDialog } from "./upload-receipt-dialog";
-
-/**
- * Validates and formats a date string. Returns formatted date or error message.
- * @param dateString - The date string to validate and format
- * @param errorMessage - The error message to return if validation fails
- * @param formatPattern - The date format pattern (default: "dd.MM.yy")
- * @returns Formatted date string or error message
- */
-const validateAndFormatDate = (
-  dateString: string | undefined | null,
-  errorMessage: string,
-  formatPattern: string = "dd.MM.yy",
-): string => {
-  // Check if dateString is missing or empty
-  if (
-    !dateString ||
-    typeof dateString !== "string" ||
-    dateString.trim() === ""
-  ) {
-    return errorMessage;
-  }
-
-  try {
-    const date = new Date(dateString);
-
-    // Validate if the date is a valid date object
-    if (!isValid(date)) {
-      return errorMessage;
-    }
-
-    // Check if the date string is actually a valid date (not just any string)
-    if (isNaN(date.getTime())) {
-      return errorMessage;
-    }
-
-    return format(date, formatPattern);
-  } catch {
-    return errorMessage;
-  }
-};
 
 interface ViewInvoiceDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   booking: HistoryBooking | null;
-  // bookingSummary: BookingSummaryDetail | null;
 }
 
 const ViewInvoiceDialog: React.FC<ViewInvoiceDialogProps> = ({
   open,
   onOpenChange,
-  // bookingSummary,
   booking,
 }) => {
   const [state, setState] = useState<InvoiceDialogState>({
@@ -87,46 +43,80 @@ const ViewInvoiceDialog: React.FC<ViewInvoiceDialogProps> = ({
     error: null,
     isLoading: false,
   });
-  const [uploadReceiptOpen, setUploadReceiptOpen] = useState(false);
   const [currentInvoiceIndex, setCurrentInvoiceIndex] = useState(0);
 
-  const allInvoiceData = booking?.invoices || [];
-  const invoice = booking?.invoices[currentInvoiceIndex];
+  // Helper function to get consistent invoice count
+  const getInvoiceCount = useCallback((booking: HistoryBooking): number => {
+    return booking.invoices?.length || 0;
+  }, []);
 
-  const newInvoiceData = {
-    invoiceNumber: invoice?.invoice_number || "Invoice Number Not Found",
-    companyName: invoice?.company_agent || "Company Name Not Found",
-    agentName: invoice?.agent || "Agent Name Not Found",
-    agentEmail: invoice?.email || "Email Not Found",
-    hotelName: invoice?.hotel || "Hotel Name Not Found",
-    guestName: invoice?.guest || "Guest Name Not Found",
-    checkInDate: validateAndFormatDate(
-      invoice?.check_in,
-      "Check-in Date Not Found",
-      "dd.MM.yy",
-    ),
-    checkOutDate: validateAndFormatDate(
-      invoice?.check_out,
-      "Check-out Date Not Found",
-      "dd.MM.yy",
-    ),
-    invoiceDate: validateAndFormatDate(
-      invoice?.invoice_date,
-      "Invoice Date Not Found",
-      "dd.MM.yy",
-    ),
-    subBookingId: invoice?.sub_booking_id || "Sub-Booking ID Not Found",
-    items: invoice?.description_invoice || [],
-    totalPrice: invoice?.total_price || 0,
-    totalBeforePromo: invoice?.total_before_promo || 0,
-    promo: {
-      ...invoice?.promo,
-    },
-  };
+  // Generate multiple invoice data from the new booking invoice structure
+  const allInvoiceData = useMemo<ComprehensiveInvoiceData[]>(() => {
+    if (!booking || !booking.invoices || booking.invoices.length === 0)
+      return [];
+    try {
+      return booking.invoices.map((invoiceData) =>
+        InvoiceGenerator.generateFromInvoiceData(invoiceData, booking),
+      );
+    } catch (error) {
+      console.error("Failed to generate invoice data:", error);
+      return [];
+    }
+  }, [booking]);
+
+  // Get current invoice data
+  const invoiceData = useMemo<ComprehensiveInvoiceData | null>(() => {
+    return allInvoiceData[currentInvoiceIndex] || null;
+  }, [allInvoiceData, currentInvoiceIndex]);
+
+  // Navigation functions
+  const navigateToPrevious = useCallback(() => {
+    setCurrentInvoiceIndex((prev) =>
+      prev > 0 ? prev - 1 : allInvoiceData.length - 1,
+    );
+  }, [allInvoiceData.length]);
+
+  const navigateToNext = useCallback(() => {
+    setCurrentInvoiceIndex((prev) =>
+      prev < allInvoiceData.length - 1 ? prev + 1 : 0,
+    );
+  }, [allInvoiceData.length]);
+
+  // Keyboard navigation
+  useEffect(() => {
+    const handleKeyDown = (event: KeyboardEvent) => {
+      if (!open || allInvoiceData.length <= 1) return;
+
+      if (event.key === "ArrowLeft") {
+        event.preventDefault();
+        navigateToPrevious();
+      } else if (event.key === "ArrowRight") {
+        event.preventDefault();
+        navigateToNext();
+      }
+    };
+
+    document.addEventListener("keydown", handleKeyDown);
+    return () => document.removeEventListener("keydown", handleKeyDown);
+  }, [open, allInvoiceData.length, navigateToPrevious, navigateToNext]);
+
+  // Reset navigation when dialog opens/closes or booking changes
+  useEffect(() => {
+    setCurrentInvoiceIndex(0);
+  }, [booking, open]);
+
+  // Update state when invoice data changes
+  useEffect(() => {
+    setState((prev) => ({
+      ...prev,
+      invoiceData,
+      error: invoiceData ? null : "Failed to generate invoice data",
+    }));
+  }, [invoiceData]);
 
   // Handle PDF download
   const handleDownloadPDF = async () => {
-    if (!newInvoiceData) {
+    if (!invoiceData) {
       toast.error("No invoice data available");
       return;
     }
@@ -134,14 +124,19 @@ const ViewInvoiceDialog: React.FC<ViewInvoiceDialogProps> = ({
     try {
       setState((prev) => ({ ...prev, isGeneratingPDF: true, error: null }));
 
-      // Use centralized PDFService for PDF generation and download
-      await PDFService.generateAndDownloadNewInvoice(
-        newInvoiceData as NewInvoiceData,
-        (step) => {
-          // Optional: You could show progress here if needed
-          console.log("PDF Generation:", step);
-        },
-      );
+      // Validate invoice data
+      const validation = PDFService.validateInvoiceData(invoiceData);
+      if (!validation.isValid) {
+        throw new Error(
+          `Invalid invoice data: ${validation.errors.join(", ")}`,
+        );
+      }
+
+      // Generate and download PDF
+      await PDFService.generateAndDownloadInvoice(invoiceData, (step) => {
+        // You could show progress here if needed
+        console.log("PDF Generation:", step);
+      });
 
       toast.success("Invoice PDF downloaded successfully!");
     } catch (error) {
@@ -155,34 +150,22 @@ const ViewInvoiceDialog: React.FC<ViewInvoiceDialogProps> = ({
     }
   };
 
-  const navigateToPrevious = () => {
-    if (currentInvoiceIndex > 0) {
-      setCurrentInvoiceIndex(currentInvoiceIndex - 1);
-    }
-  };
+  if (!booking) {
+    return (
+      <Dialog open={open} onOpenChange={onOpenChange}>
+        <DialogContent className="w-[95vw] max-w-7xl px-8">
+          <DialogHeader>
+            <DialogTitle>Invoice</DialogTitle>
+          </DialogHeader>
+          <div className="text-muted-foreground py-8 text-center">
+            No booking selected.
+          </div>
+        </DialogContent>
+      </Dialog>
+    );
+  }
 
-  const navigateToNext = () => {
-    if (currentInvoiceIndex < allInvoiceData.length - 1) {
-      setCurrentInvoiceIndex(currentInvoiceIndex + 1);
-    }
-  };
-
-  // if (!booking) {
-  //   return (
-  //     <Dialog open={open} onOpenChange={onOpenChange}>
-  //       <DialogContent className="w-[95vw] max-w-7xl px-8">
-  //         <DialogHeader>
-  //           <DialogTitle>Invoice</DialogTitle>
-  //         </DialogHeader>
-  //         <div className="text-muted-foreground py-8 text-center">
-  //           No booking selected.
-  //         </div>
-  //       </DialogContent>
-  //     </Dialog>
-  //   );
-  // }
-
-  if (!newInvoiceData) {
+  if (!invoiceData) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>
         <DialogContent className="w-[95vw] max-w-7xl px-8">
@@ -205,7 +188,7 @@ const ViewInvoiceDialog: React.FC<ViewInvoiceDialogProps> = ({
           <DialogTitle className="flex items-center justify-between">
             <div className="sr-only flex items-center gap-2">
               <IconFileText className="h-5 w-5" />
-              Invoice #{invoice?.invoice_number}
+              Invoice #{invoiceData.invoiceNumber}
             </div>
 
             {/* Navigation arrows for multiple invoices */}
@@ -259,7 +242,7 @@ const ViewInvoiceDialog: React.FC<ViewInvoiceDialogProps> = ({
             <div className="text-right">
               <h1 className="text-3xl font-bold text-gray-900">Invoice</h1>
               <p className="text-2xl font-bold text-gray-700">
-                #{newInvoiceData.invoiceNumber}
+                #{invoiceData.invoiceNumber}
               </p>
             </div>
           </div>
@@ -272,9 +255,11 @@ const ViewInvoiceDialog: React.FC<ViewInvoiceDialogProps> = ({
             {/* Bill To */}
             <div>
               <div className="space-y-1 text-sm">
-                <p className="font-medium">{newInvoiceData.companyName}</p>
-                <p>{newInvoiceData.agentName}</p>
-                <p>{newInvoiceData.agentEmail}</p>
+                <p className="font-medium">
+                  {invoiceData.customer.companyName || "Company Name"}
+                </p>
+                <p>{invoiceData.customer.agentName || "Agent Name"}</p>
+                <p>{invoiceData.customer.email || "email@client.com"}</p>
               </div>
             </div>
 
@@ -283,16 +268,15 @@ const ViewInvoiceDialog: React.FC<ViewInvoiceDialogProps> = ({
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Villa</span>
-                  <span>{newInvoiceData.hotelName}</span>
+                  <span>{invoiceData.hotelName}</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Guest Name</span>
-                  <span>{newInvoiceData.guestName}</span>
+                  <span>{formatDate(invoiceData.checkInDate)}</span>
                 </div>
-
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Check-In</span>
-                  <span>{newInvoiceData.checkInDate}</span>
+                  <span className="text-gray-600">Period</span>
+                  <span>{formatDate(invoiceData.checkOutDate)}</span>
                 </div>
               </div>
             </div>
@@ -302,15 +286,15 @@ const ViewInvoiceDialog: React.FC<ViewInvoiceDialogProps> = ({
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span className="text-gray-600">Invoice Date</span>
-                  <span>{newInvoiceData.invoiceDate}</span>
+                  <span>{formatDate(invoiceData.invoiceDate)}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Sub Booking ID</span>
-                  <span>{newInvoiceData.subBookingId}</span>
+                  <span className="text-gray-600">Confirmation Number</span>
+                  <span>{invoiceData.bookingId}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-600">Check-Out</span>
-                  <span>{newInvoiceData.checkOutDate}</span>
+                  <span className="text-gray-600">COD</span>
+                  <span>{formatDate(invoiceData.checkOutDate)}</span>
                 </div>
               </div>
             </div>
@@ -343,30 +327,45 @@ const ViewInvoiceDialog: React.FC<ViewInvoiceDialogProps> = ({
                   </tr>
                 </thead>
                 <tbody className="divide-y divide-gray-200 bg-white">
-                  {newInvoiceData.items.map((item, index) => (
+                  <tr>
+                    <td className="px-4 py-3 text-sm">1.</td>
+                    <td className="px-4 py-3 text-sm">
+                      {invoiceData.lineItems[0]?.description || "Room Costs"}
+                    </td>
+                    <td className="px-4 py-3 text-center text-sm">
+                      {invoiceData.lineItems[0]?.quantity || 1}
+                    </td>
+                    <td className="px-4 py-3 text-center text-sm">
+                      {invoiceData.lineItems[0]?.unitPrice ? "Night" : "Night"}
+                    </td>
+                    <td className="px-4 py-3 text-right text-sm">
+                      {formatCurrency(
+                        invoiceData.lineItems[0]?.unitPrice || 0,
+                        invoiceData.currency,
+                      )}
+                    </td>
+                    <td className="px-4 py-3 text-right text-sm font-medium">
+                      {formatCurrency(
+                        invoiceData.lineItems[0]?.total || 0,
+                        invoiceData.currency,
+                      )}
+                    </td>
+                  </tr>
+                  {invoiceData.lineItems.slice(1).map((item, index) => (
                     <tr key={index}>
-                      <td className="px-4 py-3 text-sm">{index + 1}.</td>
+                      <td className="px-4 py-3 text-sm">{index + 2}.</td>
                       <td className="px-4 py-3 text-sm">{item.description}</td>
                       <td className="px-4 py-3 text-center text-sm">
                         {item.quantity}
                       </td>
                       <td className="px-4 py-3 text-center text-sm">
-                        {item.unit}
+                        {item.description.includes("price") ? "Night" : "Item"}
                       </td>
                       <td className="px-4 py-3 text-right text-sm">
-                        {formatCurrency(item.price, "IDR")}
+                        {formatCurrency(item.unitPrice, invoiceData.currency)}
                       </td>
                       <td className="px-4 py-3 text-right text-sm font-medium">
-                        <div className="flex flex-col items-end gap-1">
-                          {/* Conditionally show strikethrough price when promo is applied to this item */}
-                          {newInvoiceData.promo?.promo_code &&
-                            item.total_before_promo > item.total && (
-                              <span className="text-xs text-gray-500 line-through">
-                                {formatCurrency(item.total_before_promo, "IDR")}
-                              </span>
-                            )}
-                          <span>{formatCurrency(item.total, "IDR")}</span>
-                        </div>
+                        {formatCurrency(item.total, invoiceData.currency)}
                       </td>
                     </tr>
                   ))}
@@ -377,45 +376,45 @@ const ViewInvoiceDialog: React.FC<ViewInvoiceDialogProps> = ({
 
           {/* Total Section */}
           <div className="flex justify-end">
-            <div className="w-full max-w-sm space-y-2">
-              <div className="flex items-start justify-between pb-2">
-                <div>
-                  <span className="text-lg font-medium text-gray-900">
-                    Total Room Price
-                  </span>
-                  {/* <p className="mt-1 text-sm text-gray-600">
-                    {invoiceData.numberOfGuests} room(s),{" "}
-                    {invoiceData.numberOfNights} night
-                  </p> */}
-                </div>
-                <div className="text-right">
-                  {/* Conditionally show strikethrough price when promo is applied */}
-                  {newInvoiceData.promo?.promo_code &&
-                    newInvoiceData.totalBeforePromo >
-                      newInvoiceData.totalPrice && (
-                      <div className="mb-1 flex items-center justify-end gap-2">
-                        <span className="text-sm text-gray-500 line-through">
-                          {formatCurrency(
-                            newInvoiceData.totalBeforePromo,
-                            "IDR",
-                          )}
-                        </span>
-                      </div>
+            <div className="w-full max-w-sm">
+              <div className="flex items-center justify-between">
+                <span className="text-lg font-medium text-gray-900">Total</span>
+                {invoiceData.discount > 0 && (
+                  <span className="text-sm text-gray-500 line-through">
+                    {formatCurrency(
+                      invoiceData.subtotal + invoiceData.discount,
+                      invoiceData.currency,
                     )}
-                  <p className="text-2xl font-bold text-gray-900">
-                    {formatCurrency(newInvoiceData.totalPrice, "IDR")}
-                  </p>
-                </div>
+                  </span>
+                )}
               </div>
-              {/* Conditionally show promo badge when promo code exists */}
-              {newInvoiceData.promo?.promo_code && (
-                <div className="flex items-end justify-end">
-                  <span className="flex items-center gap-1 rounded-full bg-gray-800 px-3 py-1 text-xs font-medium text-white">
+
+              {/* Second row: Room/Night info and Total price */}
+              <div className="mb-2 flex items-center justify-between">
+                <p className="text-sm text-gray-600">
+                  {invoiceData.numberOfGuests} room(s),{" "}
+                  {invoiceData.numberOfNights} night
+                </p>
+                <p className="text-2xl font-bold text-gray-900">
+                  {formatCurrency(
+                    invoiceData.totalAmount,
+                    invoiceData.currency,
+                  )}
+                </p>
+              </div>
+
+              {/* Third row: Promo code display (if applicable) */}
+              {invoiceData.discount > 0 && (
+                <div className="flex justify-end">
+                  <span className="bg-primary flex items-center gap-1 rounded-full px-3 py-1 text-xs font-medium text-white">
                     Promo
-                    <IconRosetteDiscount size={14} />
-                    <span className="font-semibold">
-                      {newInvoiceData.promo.promo_code}
-                    </span>
+                    <IconRosetteDiscount className="h-4 w-4" />
+                    Discount |{" "}
+                    {formatCurrency(
+                      invoiceData.discount,
+                      invoiceData.currency,
+                    )}{" "}
+                    Off!
                   </span>
                 </div>
               )}
@@ -426,6 +425,8 @@ const ViewInvoiceDialog: React.FC<ViewInvoiceDialogProps> = ({
           <div className="mb-4 border-b pt-8 pb-4">
             <p className="text-sm text-gray-600">
               Payment and cancellation policy as per contract.
+              <br />
+              *terms & condition applied
             </p>
           </div>
         </div>
@@ -454,15 +455,11 @@ const ViewInvoiceDialog: React.FC<ViewInvoiceDialogProps> = ({
 
           {/* Action Buttons */}
           <div className="flex flex-col gap-3">
-            <Button
-              className="w-full"
-              onClick={() => setUploadReceiptOpen(true)}
-            >
+            <Button className="w-full">
               <IconCloudUpload /> Upload Payment Receipt
             </Button>
             <Button
               variant="outline"
-              className="w-full bg-[#D0D6DB]"
               onClick={handleDownloadPDF}
               disabled={state.isGeneratingPDF}
             >
@@ -480,14 +477,6 @@ const ViewInvoiceDialog: React.FC<ViewInvoiceDialogProps> = ({
           </div>
         </DialogFooter>
       </DialogContent>
-      <UploadReceiptDialog
-        open={uploadReceiptOpen}
-        onOpenChange={setUploadReceiptOpen}
-        subBookingId={newInvoiceData.subBookingId}
-        onSuccess={() => {
-          toast.success("Receipt uploaded successfully!");
-        }}
-      />
     </Dialog>
   );
 };

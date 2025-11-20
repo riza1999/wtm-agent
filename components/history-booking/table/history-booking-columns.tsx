@@ -138,7 +138,7 @@ export function getHistoryBookingTableColumns({
     {
       id: "actions",
       cell: function Cell({ row }) {
-        const invoiceCount = 2;
+        const invoiceCount = row.original.invoices.length || 0;
 
         return (
           <DropdownMenu>

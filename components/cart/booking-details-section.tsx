@@ -232,7 +232,7 @@ const HotelRoomCard = ({ bookingDetails, guests }: HotelRoomCardProps) => {
           </div>
 
           {/* Additional Services */}
-          {bookingDetails.additional.map((additional, idx) => (
+          {bookingDetails.additional?.map((additional, idx) => (
             <React.Fragment
               key={`${bookingDetails.room_type_name}-additional-${idx}`}
             >
@@ -358,7 +358,7 @@ const BookingGrandTotalCard = ({
                   </div>
                   <div className="text-xs leading-tight font-extralight">
                     {detail.room_type_name}
-                    {detail.additional.length > 0 &&
+                    {detail.additional?.length > 0 &&
                       ` + ${detail.additional.map((s) => s.name).join(" + ")}`}
                   </div>
                 </div>

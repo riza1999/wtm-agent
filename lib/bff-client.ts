@@ -1,3 +1,5 @@
+import { redirect } from "next/navigation";
+
 const API_BASE_URL =
   process.env.AUTH_API_BASE_URL ?? "http://54.255.206.242:4816/api";
 
@@ -37,6 +39,10 @@ export async function bffFetch(
     headers: normalizedHeaders,
     cache: "no-store",
   });
+
+  if (response.status === 401) {
+    redirect("/logout");
+  }
 
   if (!response.ok && onError) {
     return onError(response);

@@ -9,6 +9,7 @@ export async function apiCall<TData>(
   options: RequestInit = {},
 ): Promise<ApiResponse<TData>> {
   const response = await bffFetch(endpoint, options);
+
   if (!response.ok) {
     // Force user to logout
     // redirect("/logout");
@@ -16,6 +17,7 @@ export async function apiCall<TData>(
     // Try to parse error response as JSON, but fallback to a default error structure
     try {
       const errorData = await response.json();
+
       return errorData;
     } catch (error) {
       // If JSON parsing fails, return a default error structure

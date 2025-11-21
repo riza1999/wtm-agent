@@ -1,13 +1,23 @@
 "use client";
 
-import { signOut } from "next-auth/react";
+import { api } from "@/lib/api";
+import { delay } from "@/lib/utils";
+import { useRouter } from "next/navigation";
 import { useEffect } from "react";
 
 const LogoutPage = () => {
+  const router = useRouter();
+
   useEffect(() => {
     // Redirect to login page after short delay
     const timer = setTimeout(async () => {
-      await signOut({ callbackUrl: "/login" });
+      await api("/api/auth/logout", {
+        method: "POST",
+      });
+
+      await delay(100);
+
+      router.push("/login");
     }, 300);
 
     return () => clearTimeout(timer);

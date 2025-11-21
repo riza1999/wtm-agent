@@ -42,9 +42,9 @@ export const NavUser = () => {
   });
 
   const user = {
-    name: dataProfile?.data.full_name || "User",
-    email: dataProfile?.data.email || "",
-    avatar: formatUrl(dataProfile?.data.photo_profile) || "",
+    name: dataProfile?.data?.full_name || "User",
+    email: dataProfile?.data?.email || "",
+    avatar: formatUrl(dataProfile?.data?.photo_profile) || "",
   };
 
   const handleLogout = async (

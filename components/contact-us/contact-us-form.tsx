@@ -22,7 +22,6 @@ import {
   FormMessage,
 } from "@/components/ui/form";
 import { Input } from "@/components/ui/input";
-import { Skeleton } from "@/components/ui/skeleton";
 import {
   Select,
   SelectContent,
@@ -30,6 +29,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
+import { Skeleton } from "@/components/ui/skeleton";
 import { Textarea } from "@/components/ui/textarea";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { useQuery } from "@tanstack/react-query";
@@ -55,13 +55,14 @@ const ContactUsForm = ({ urlBookingId }: ContactUsFormProps) => {
     queryFn: fetchAccountProfile,
     staleTime: 1000 * 60 * 5, // 5 minutes
     retry: 2,
+    enabled: false,
   });
 
   const form = useForm<ContactUsSchema>({
     resolver: zodResolver(contactUsSchema),
     values: {
-      name: dataProfile?.data.full_name || "",
-      email: dataProfile?.data.email || "",
+      name: dataProfile?.data?.full_name || "",
+      email: dataProfile?.data?.email || "",
       subject: "",
       type: urlBookingId ? "booking" : "general",
       message: "",

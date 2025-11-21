@@ -109,7 +109,7 @@ export const UploadReceiptDialog: React.FC<UploadReceiptDialogProps> = ({
       }
 
       if (subBookingId) {
-        formData.append("sub_booking_id", subBookingId);
+        formData.append("booking_detail_id", subBookingId);
       }
 
       const { success, message } = await uploadReceipt(formData);

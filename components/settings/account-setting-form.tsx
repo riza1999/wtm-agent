@@ -88,6 +88,8 @@ const AccountSettingForm = ({ defaultValues }: AccountSettingFormProps) => {
                     <Input
                       placeholder="Enter your username"
                       className="bg-gray-200"
+                      disabled
+                      readOnly
                       {...field}
                     />
                   </FormControl>

@@ -130,6 +130,8 @@ const EditProfileForm = ({ defaultValues }: EditProfileFormProps) => {
                       type="email"
                       placeholder="Enter email address"
                       className="bg-gray-200"
+                      disabled
+                      readOnly
                       {...field}
                     />
                   </FormControl>
@@ -149,6 +151,8 @@ const EditProfileForm = ({ defaultValues }: EditProfileFormProps) => {
                     <Input
                       placeholder="Enter phone number"
                       className="bg-gray-200"
+                      disabled
+                      readOnly
                       {...field}
                     />
                   </FormControl>

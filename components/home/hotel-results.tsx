@@ -14,6 +14,7 @@ import {
   PaginationNext,
   PaginationPrevious,
 } from "@/components/ui/pagination";
+import { Skeleton } from "@/components/ui/skeleton";
 import { formatCurrency } from "@/lib/format";
 import { formatUrl } from "@/lib/url-utils";
 import { format } from "date-fns";
@@ -40,7 +41,23 @@ const HotelResults = ({ promise }: HotelResultsProps) => {
   return (
     <section className="grid auto-rows-min grid-cols-1 gap-4 sm:grid-cols-2 md:col-span-3 lg:grid-cols-3">
       <SearchByName />
-      <React.Suspense fallback="Loading...">
+      <React.Suspense
+        fallback={
+          <>
+            {[...Array(6)].map((_, i) => (
+              <Card key={i} className="overflow-hidden">
+                <Skeleton className="aspect-[2/1] w-full" />
+                <div className="p-4">
+                  <Skeleton className="mb-2 h-4 w-24" />
+                  <Skeleton className="mb-2 h-6 w-3/4" />
+                  <Skeleton className="mb-4 h-4 w-full" />
+                  <Skeleton className="h-8 w-32" />
+                </div>
+              </Card>
+            ))}
+          </>
+        }
+      >
         <HotelList promise={promise} />
       </React.Suspense>
     </section>

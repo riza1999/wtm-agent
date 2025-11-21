@@ -89,7 +89,7 @@ export function LoginForm({
             <Input
               id="username"
               className="mt-1 bg-gray-200 text-black"
-              placeholder="Enter your username"
+              placeholder="Enter your username or email"
               {...form.register("username")}
               disabled={isPending}
             />

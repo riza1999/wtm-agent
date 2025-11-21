@@ -167,21 +167,6 @@ const ViewInvoiceDialog: React.FC<ViewInvoiceDialogProps> = ({
     }
   };
 
-  // if (!booking) {
-  //   return (
-  //     <Dialog open={open} onOpenChange={onOpenChange}>
-  //       <DialogContent className="w-[95vw] max-w-7xl px-8">
-  //         <DialogHeader>
-  //           <DialogTitle>Invoice</DialogTitle>
-  //         </DialogHeader>
-  //         <div className="text-muted-foreground py-8 text-center">
-  //           No booking selected.
-  //         </div>
-  //       </DialogContent>
-  //     </Dialog>
-  //   );
-  // }
-
   if (!newInvoiceData) {
     return (
       <Dialog open={open} onOpenChange={onOpenChange}>

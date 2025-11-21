@@ -6,7 +6,6 @@ import {
   selectGuest,
 } from "@/app/(protected)/cart/actions";
 import { fetchCart } from "@/app/(protected)/cart/fetch";
-import { BookingDetail } from "@/app/(protected)/cart/types";
 import { HistoryBooking } from "@/app/(protected)/history-booking/types";
 import ViewInvoiceDialog from "@/components/history-booking/dialog/view-invoice-dialog";
 import { Button } from "@/components/ui/button";
@@ -321,31 +320,6 @@ const BookingGrandTotalCard = ({
   const [generatedBooking, setGeneratedBooking] =
     useState<HistoryBooking | null>(null);
 
-  // Function to convert BookingDetail to HistoryBooking for invoice generation
-  const convertToHistoryBooking = (
-    bookingDetailsList: BookingDetail[],
-  ): HistoryBooking => {
-    return {
-      booking_code: `booking-${Date.now()}`,
-      booking_id: Math.floor(Math.random() * 1000) + 1,
-      booking_status: "approved",
-      detail: [
-        {
-          additional: [],
-          agent_name: "Agent Name",
-          booking_status: "approved",
-          cancellation_date: new Date().toISOString(),
-          guest_name: "John Doe",
-          hotel_name: bookingDetailsList.map((b) => b.hotelName).join(", "),
-          payment_status: "unpaid",
-          sub_booking_id: "1",
-        },
-      ],
-      guest_name: ["John Doe"], // This would come from guest context in real app
-      payment_status: "unpaid",
-    };
-  };
-
   const onCheckOut = async () => {
     startTransition(async () => {
       toast.promise(checkoutCart(), {
@@ -357,17 +331,6 @@ const BookingGrandTotalCard = ({
         error: ({ message }) =>
           message || "Failed to check out cart. Please try again.",
       });
-
-      // await delay(1000);
-
-      // Generate dummy booking data for invoice
-      // const historyBooking = convertToHistoryBooking(cartData);
-      // setGeneratedBooking(historyBooking);
-
-      // toast.success("Checkout Success - Invoice Generated!");
-
-      // Show invoice dialog
-      // setShowInvoiceDialog(true);
     });
   };
 
@@ -378,16 +341,6 @@ const BookingGrandTotalCard = ({
       minimumFractionDigits: 0,
     }).format(price);
   };
-
-  // const grandTotal = cartData.reduce((sum, b) => sum + b.totalPrice, 0);
-
-  // // Calculate total discount across all bookings
-  // const totalDiscount = cartData.reduce(
-  //   (sum, booking) => sum + Math.floor(booking.totalPrice * 0.15),
-  //   0,
-  // );
-
-  // const discountedGrandTotal = grandTotal - totalDiscount;
 
   return (
     <div className="md:col-span-2 md:col-end-6">

@@ -16,7 +16,7 @@ import { zodResolver } from "@hookform/resolvers/zod";
 import { Loader } from "lucide-react";
 import Link from "next/link";
 import { useRouter, useSearchParams } from "next/navigation";
-import React from "react";
+import React, { use } from "react";
 import { useForm } from "react-hook-form";
 import z from "zod";
 import {
@@ -43,7 +43,9 @@ const resetPasswordSchema = z
 
 type ResetPasswordSchema = z.infer<typeof resetPasswordSchema>;
 
-type ResetPasswordFormProps = React.ComponentProps<"div">;
+type ResetPasswordFormProps = React.ComponentProps<"div"> & {
+  searchParams: Promise<{ token?: string }>;
+};
 
 type DialogState = {
   open: boolean;
@@ -54,12 +56,13 @@ type DialogState = {
 
 export function ResetPasswordForm({
   className,
+  searchParams,
   ...props
 }: ResetPasswordFormProps) {
   const [isPending, startTransition] = React.useTransition();
   const router = useRouter();
-  const searchParams = useSearchParams();
-  const token = searchParams.get("token") || "";
+  const param = use(searchParams);
+  const token = param.token || "";
 
   const [dialog, setDialog] = React.useState<DialogState>({
     open: false,

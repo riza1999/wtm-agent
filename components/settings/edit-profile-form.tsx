@@ -22,15 +22,16 @@ import z from "zod";
 
 const profileSchema = z.object({
   full_name: z.string().min(1, "Full name is required"),
-  agent_company: z.string().min(1, "Agent company is required"),
-  email: z.string().email("Please enter a valid email"), // Display only field
+  agent_company: z.string().min(1, "Agent company is required").optional(),
+  email: z.string().email("Please enter a valid email").optional(), // Display only field
   phone: z
     .string()
     .min(8, "Phone number must be at least 8 characters")
     .regex(
       /^\+\d+$/,
       "Phone number must start with a country code (e.g., +62) followed by digits only",
-    ),
+    )
+    .optional(),
   kakao_talk_id: z.string().min(1, "KakaoTalk ID is required"),
 });
 

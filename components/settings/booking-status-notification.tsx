@@ -75,10 +75,18 @@ const BookingStatusNotification = ({
 
   useEffect(() => {
     setAllEmailChecked(confirmedBooking && rejectedBooking);
+    // Sync main switch with individual checkboxes - turn off if all are unchecked
+    if (!confirmedBooking && !rejectedBooking) {
+      setEmailEnabled(false);
+    }
   }, [confirmedBooking, rejectedBooking]);
 
   useEffect(() => {
     setAllWebChecked(webConfirmedBooking && webRejectedBooking);
+    // Sync main switch with individual checkboxes - turn off if all are unchecked
+    if (!webConfirmedBooking && !webRejectedBooking) {
+      setWebAppEnabled(false);
+    }
   }, [webConfirmedBooking, webRejectedBooking]);
 
   // Helper function to update notification setting
@@ -114,6 +122,14 @@ const BookingStatusNotification = ({
   // Email notification handlers
   const handleEmailEnabledChange = (enabled: boolean) => {
     setEmailEnabled(enabled);
+
+    if (enabled) {
+      // When turning on main switch, check all individual options
+      setConfirmedBooking(true);
+      setRejectedBooking(true);
+      setAllEmailChecked(true);
+    }
+
     // When toggling the main switch, update the "all" type
     handleUpdateNotification("email", "all", enabled);
   };
@@ -165,6 +181,14 @@ const BookingStatusNotification = ({
   // Web app notification handlers
   const handleWebAppEnabledChange = (enabled: boolean) => {
     setWebAppEnabled(enabled);
+
+    if (enabled) {
+      // When turning on main switch, check all individual options
+      setWebConfirmedBooking(true);
+      setWebRejectedBooking(true);
+      setAllWebChecked(true);
+    }
+
     // When toggling the main switch, update the "all" type
     handleUpdateNotification("web", "all", enabled);
   };

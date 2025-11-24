@@ -37,7 +37,7 @@ const HotelResults = ({ promise }: HotelResultsProps) => {
   if (status !== 200) return "Error loading data";
 
   return (
-    <section className="grid auto-rows-min grid-cols-1 gap-4 sm:grid-cols-2 md:col-span-3 lg:grid-cols-3">
+    <section className="grid auto-rows-min grid-cols-1 gap-3 sm:grid-cols-2 sm:gap-4 md:col-span-3 lg:grid-cols-3">
       <SearchByName />
       <React.Suspense
         fallback={
@@ -45,7 +45,7 @@ const HotelResults = ({ promise }: HotelResultsProps) => {
             {[...Array(6)].map((_, i) => (
               <Card key={i} className="overflow-hidden">
                 <Skeleton className="aspect-[2/1] w-full" />
-                <div className="p-4">
+                <div className="p-3 sm:p-4">
                   <Skeleton className="mb-2 h-4 w-24" />
                   <Skeleton className="mb-2 h-6 w-3/4" />
                   <Skeleton className="mb-4 h-4 w-full" />
@@ -291,7 +291,9 @@ const HotelCard = ({ hotel }: HotelCardProps) => {
         <div className="relative aspect-[2/1] flex-shrink-0">
           {imgError || !hotel.photo ? (
             <div className="absolute inset-0 flex items-center justify-center bg-gray-200">
-              <span className="text-gray-500">Image not found</span>
+              <span className="text-sm text-gray-500 sm:text-base">
+                Image not found
+              </span>
             </div>
           ) : (
             <Image
@@ -305,15 +307,17 @@ const HotelCard = ({ hotel }: HotelCardProps) => {
           )}
         </div>
 
-        <div className="flex flex-grow flex-col gap-1 p-4">
+        <div className="flex flex-grow flex-col gap-1 p-3 sm:p-4">
           <span className="text-yellow-500">{"★".repeat(hotel.rating)}</span>
-          <h3 className="text-lg font-semibold">{hotel.name}</h3>
-          <p className="text-muted-foreground text-sm">{hotel.address}</p>
+          <h3 className="text-base font-semibold sm:text-lg">{hotel.name}</h3>
+          <p className="text-muted-foreground text-xs sm:text-sm">
+            {hotel.address}
+          </p>
 
           <div className="mt-auto pt-2 text-sm">
             <div className="text-xs">
               Start from{" "}
-              <span className="text-base font-semibold">
+              <span className="text-sm font-semibold sm:text-base">
                 {formatCurrency(hotel.min_price, "IDR")}
               </span>
             </div>

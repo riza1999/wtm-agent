@@ -28,7 +28,9 @@ import {
   Users,
 } from "lucide-react";
 
+import { getPromos } from "@/app/(protected)/home/fetch";
 import { fetchListProvince } from "@/server/general";
+import { useQuery } from "@tanstack/react-query";
 import {
   createParser,
   parseAsInteger,
@@ -53,8 +55,6 @@ import {
   CommandList,
 } from "../ui/command";
 import { Input } from "../ui/input";
-import { useQuery } from "@tanstack/react-query";
-import { getPromos } from "@/app/(protected)/home/fetch";
 
 const SearchFilter = ({
   provincesPromise,
@@ -102,9 +102,9 @@ const SearchFilter = ({
   };
 
   return (
-    <section className="mb-0 py-4">
-      <div className="mx-4 rounded border border-gray-200 bg-white/95 p-4 shadow-lg backdrop-blur-sm">
-        <div className="flex flex-col gap-2 sm:flex-row">
+    <section className="mb-0 py-2 sm:py-4">
+      <div className="mx-auto rounded border border-gray-200 bg-white/95 p-3 shadow-lg backdrop-blur-sm sm:p-4">
+        <div className="flex flex-col gap-2 md:flex-row">
           <LocationSelector provinces={provinces} />
           <DateRangePicker />
           <GuestCounter />
@@ -143,17 +143,17 @@ const LocationSelector = ({
           variant={"outline"}
           role={"combobox"}
           aria-expanded={open}
-          className={"flex-1 justify-between bg-gray-200"}
+          className={"w-full justify-between bg-gray-200 md:flex-1"}
         >
-          <div className={"flex items-center gap-2"}>
-            <MapPin className={"h-4 w-4"} />
-            <span>
+          <div className={"flex items-center gap-2 overflow-hidden"}>
+            <MapPin className={"h-4 w-4 flex-shrink-0"} />
+            <span className="truncate">
               {value
                 ? provinces.find((place) => place.value === value)?.label
                 : "Choose your destination"}
             </span>
           </div>
-          <ChevronDown className={"h-4 w-4 opacity-50"} />
+          <ChevronDown className={"h-4 w-4 flex-shrink-0 opacity-50"} />
         </Button>
       </PopoverTrigger>
       <PopoverContent className={"w-[var(--radix-popover-trigger-width)] p-0"}>
@@ -220,17 +220,26 @@ const DateRangePicker = () => {
         <Button
           variant={"outline"}
           className={cn(
-            "flex-1 justify-start bg-gray-200 text-left font-normal",
+            "w-full justify-start bg-gray-200 text-left font-normal md:flex-1",
             !from && "text-muted-foreground",
           )}
         >
-          <CalendarIcon className="mr-2 h-4 w-4" />
-          {from && to ? (
-            `${format(from, "MMM d, yyyy")} - ${format(to, "MMM d, yyyy")}`
-          ) : (
-            <span>Select Period</span>
-          )}
-          <ChevronsUpDown className="ml-auto opacity-50" />
+          <CalendarIcon className="mr-2 h-4 w-4 flex-shrink-0" />
+          <span className="truncate">
+            {from && to ? (
+              <span className="hidden sm:inline">
+                {`${format(from, "MMM d, yyyy")} - ${format(to, "MMM d, yyyy")}`}
+              </span>
+            ) : (
+              <span>Select Period</span>
+            )}
+            {from && to && (
+              <span className="sm:hidden">
+                {`${format(from, "MMM d")} - ${format(to, "MMM d")}`}
+              </span>
+            )}
+          </span>
+          <ChevronsUpDown className="ml-auto flex-shrink-0 opacity-50" />
         </Button>
       </PopoverTrigger>
       <PopoverContent className="w-auto p-0">
@@ -314,15 +323,20 @@ const GuestCounter = () => {
       <PopoverTrigger asChild>
         <Button
           variant={"outline"}
-          className={"flex-1 justify-between bg-gray-200"}
+          className={"w-full justify-between bg-gray-200 md:flex-1"}
         >
-          <div className={"flex items-center gap-2"}>
-            <Users className={"h-4 w-4"} />
-            <span>
-              {adult} Adult(s), {children} Child, {room} Room
+          <div className={"flex items-center gap-2 overflow-hidden"}>
+            <Users className={"h-4 w-4 flex-shrink-0"} />
+            <span className="truncate text-sm sm:text-base">
+              <span className="hidden sm:inline">
+                {adult} Adult(s), {children} Child, {room} Room
+              </span>
+              <span className="sm:hidden">
+                {adult}A, {children}C, {room}R
+              </span>
             </span>
           </div>
-          <ChevronDown className={"h-4 w-4 opacity-50"} />
+          <ChevronDown className={"h-4 w-4 flex-shrink-0 opacity-50"} />
         </Button>
       </PopoverTrigger>
       <PopoverContent className={"w-[var(--radix-popover-trigger-width)]"}>
@@ -373,96 +387,6 @@ const GuestCounter = () => {
   );
 };
 
-// Mock promo data with hotels
-const promoData = [
-  {
-    id: 1,
-    code: "PAYDAY15",
-    title: "Payday Sale | Free Breakfast",
-    description: "Get free breakfast with selected hotels",
-    hotels: [
-      {
-        id: 1,
-        name: "Ibis Hotel & Convention Bali",
-        roomType: "Business Suite Room for 2 Nights",
-        location: "Bali",
-      },
-      {
-        id: 2,
-        name: "Sheraton Bali",
-        roomType: "Deluxe Ocean View for 3 Nights",
-        location: "Bali",
-      },
-      {
-        id: 3,
-        name: "JW Marriott Bali",
-        roomType: "Premium Room for 2 Nights",
-        location: "Bali",
-      },
-    ],
-  },
-  {
-    id: 2,
-    code: "TWIN20",
-    title: "9.9 Twin Date | 20% OFF!",
-    description: "Special twin date promotion with 20% discount",
-    hotels: [
-      {
-        id: 4,
-        name: "Atria Hotel Bali",
-        roomType: "Twin Room for 2 Nights",
-        location: "Bali",
-      },
-      {
-        id: 5,
-        name: "Grand Hyatt Jakarta",
-        roomType: "Twin Deluxe Room for 3 Nights",
-        location: "Jakarta",
-      },
-    ],
-  },
-  {
-    id: 3,
-    code: "INDEPENDENCE",
-    title: "Independence Day | Free Upgrade to Suite Room",
-    description: "Celebrate independence with free room upgrades",
-    hotels: [
-      {
-        id: 6,
-        name: "Shangri-La Surabaya",
-        roomType: "Executive Suite for 2 Nights",
-        location: "Surabaya",
-      },
-      {
-        id: 7,
-        name: "The Ritz-Carlton Jakarta",
-        roomType: "Club Level Suite for 3 Nights",
-        location: "Jakarta",
-      },
-    ],
-  },
-  {
-    id: 4,
-    code: "SEPTEMBER500",
-    title: "September Promo | 500,000 IDR OFF!",
-    description: "Massive savings this September",
-    hotels: [
-      {
-        id: 8,
-        name: "Conrad Bali",
-        roomType: "Ocean View Suite for 4 Nights",
-        location: "Bali",
-      },
-      {
-        id: 9,
-        name: "Four Seasons Jakarta",
-        roomType: "Premier Room for 2 Nights",
-        location: "Jakarta",
-      },
-    ],
-  },
-];
-
 const PromoButton = () => {
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
@@ -505,8 +429,9 @@ const PromoButton = () => {
     <Dialog open={open} onOpenChange={setOpen}>
       <DialogTrigger asChild>
         <Button>
-          <CirclePercent className="mr-2 h-4 w-4" />
-          Find Your Promo
+          <CirclePercent className="mr-2 h-4 w-4 flex-shrink-0" />
+          <span className="hidden sm:inline">Find Your Promo</span>
+          <span className="sm:hidden">Promo</span>
         </Button>
       </DialogTrigger>
       <DialogContent className="max-h-[80vh] overflow-y-auto bg-white sm:max-w-[700px]">

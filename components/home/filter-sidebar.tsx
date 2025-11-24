@@ -77,7 +77,7 @@ function DistrictCard({
       <CardHeader className="mb-4 rounded-t bg-gray-200 px-4 pt-2">
         <h3 className="font-medium">District / City</h3>
       </CardHeader>
-      <div className="grid grid-cols-3 gap-2 px-4">
+      <div className="grid grid-cols-2 gap-2 px-4 sm:grid-cols-3">
         {displayedDistricts.map((district) => (
           <div
             key={district}

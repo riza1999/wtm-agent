@@ -53,7 +53,7 @@ export function PromoBanner() {
   // });
 
   return (
-    <div className="relative mb-4 w-full">
+    <div className="relative mb-2 w-full sm:mb-4">
       <Carousel
         opts={{
           align: "start",
@@ -64,7 +64,7 @@ export function PromoBanner() {
         <CarouselContent>
           {promoData.map((promo) => (
             <CarouselItem key={promo.id} className="md:basis-1/1">
-              <div className="relative aspect-[3/1] overflow-hidden rounded">
+              <div className="relative aspect-[2/1] overflow-hidden rounded sm:aspect-[5/2] md:aspect-[3/1]">
                 <Image
                   src={promo.image}
                   alt="Hotel promotional image"
@@ -76,8 +76,8 @@ export function PromoBanner() {
             </CarouselItem>
           ))}
         </CarouselContent>
-        <CarouselPrevious variant={"default"} className="left-2" />
-        <CarouselNext variant={"default"} className="right-2" />
+        <CarouselPrevious variant={"default"} className="left-1 sm:left-2" />
+        <CarouselNext variant={"default"} className="right-1 sm:right-2" />
       </Carousel>
     </div>
   );

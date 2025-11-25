@@ -26,7 +26,7 @@ const ViewNotesDialog: React.FC<ViewNotesDialogProps> = ({
 
   const isWaiting = booking?.booking_status.toLowerCase().includes("waiting");
 
-  const isPaid = booking?.payment_status.toLowerCase().includes("paid");
+  const isPaid = booking?.payment_status.toLowerCase() === "paid";
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>

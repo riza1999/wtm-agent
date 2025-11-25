@@ -180,11 +180,13 @@ const ViewDetailDialog: React.FC<ViewDetailDialogProps> = ({
                   )}
 
                   {bookingDetails.map((detail, index) => {
-                    const isConfirmed =
-                      detail.booking_status.toLowerCase() === "confirmed";
+                    const isConfirmed = detail.booking_status
+                      .toLowerCase()
+                      .includes("confirmed");
 
-                    const isWaiting =
-                      detail.booking_status.toLowerCase() === "waiting";
+                    const isWaiting = detail.booking_status
+                      .toLowerCase()
+                      .includes("waiting");
 
                     const isPaid =
                       detail.payment_status.toLowerCase() === "paid";

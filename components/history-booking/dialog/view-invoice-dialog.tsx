@@ -105,7 +105,7 @@ const ViewInvoiceDialog: React.FC<ViewInvoiceDialogProps> = ({
 
   const newInvoiceData = {
     invoiceNumber: invoice?.invoice_number || "Invoice Number Not Found",
-    companyName: invoice?.company_agent || "Company Name Not Found",
+    companyName: invoice?.company_agent || "",
     agentName: invoice?.agent || "Agent Name Not Found",
     agentEmail: invoice?.email || "Email Not Found",
     hotelName: invoice?.hotel || "Hotel Name Not Found",
@@ -266,7 +266,9 @@ const ViewInvoiceDialog: React.FC<ViewInvoiceDialogProps> = ({
             {/* Bill To */}
             <div>
               <div className="space-y-1 text-sm">
-                <p className="font-medium">{newInvoiceData.companyName}</p>
+                {newInvoiceData.companyName !== "" && (
+                  <p className="font-medium">{newInvoiceData.companyName}</p>
+                )}
                 <p>{newInvoiceData.agentName}</p>
                 <p>{newInvoiceData.agentEmail}</p>
               </div>

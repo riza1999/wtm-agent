@@ -2,8 +2,6 @@
 
 import { resetPasswordAction } from "@/app/reset-password/actions";
 import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import {
   Dialog,
   DialogContent,
@@ -11,20 +9,22 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 import { cn } from "@/lib/utils";
+import HBLogo from "@/public/hb_logo.png";
 import { zodResolver } from "@hookform/resolvers/zod";
-import { Loader } from "lucide-react";
-import Link from "next/link";
-import { useRouter, useSearchParams } from "next/navigation";
-import React, { use } from "react";
-import { useForm } from "react-hook-form";
-import z from "zod";
 import {
   IconAlertCircleFilled,
   IconCircleCheckFilled,
 } from "@tabler/icons-react";
-import HBLogo from "@/public/hb_logo.png";
+import { Loader } from "lucide-react";
 import Image from "next/image";
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import React, { use } from "react";
+import { useForm } from "react-hook-form";
+import z from "zod";
 
 const resetPasswordSchema = z
   .object({

@@ -74,7 +74,7 @@ const SearchFilter = ({
     to: dateRangeParser.withDefault(tomorrow).withOptions({ shallow: false }),
   });
   const [room, setRoom] = useQueryState("room", parseAsInteger.withDefault(1));
-  const [promo, setPromo] = useQueryState("promo", parseAsString);
+  const [promo, setPromo] = useQueryState("promo_id", parseAsString);
 
   // Check if any filter has been changed from default
   const hasActiveFilters = React.useMemo(() => {
@@ -391,7 +391,7 @@ const PromoButton = () => {
   const [open, setOpen] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedPromo, setSelectedPromo] = useQueryState(
-    "promo",
+    "promo_id",
     parseAsString,
   );
 
@@ -420,7 +420,7 @@ const PromoButton = () => {
     setSelectedPromo(promoCode);
     setOpen(false);
     toast.success("Promo applied!", {
-      description: `Promo code ${promoCode} has been applied to your search.`,
+      description: `Promo has been applied to your search.`,
       duration: 3000,
     });
   };
@@ -478,11 +478,13 @@ const PromoButton = () => {
                       </AccordionTrigger>
                       <Button
                         size="sm"
-                        onClick={() => handlePromoSelect(promo.code)}
+                        onClick={() => handlePromoSelect(String(promo.id))}
                         className="ml-4 shrink-0"
-                        disabled={selectedPromo === promo.code}
+                        disabled={selectedPromo === String(promo.id)}
                       >
-                        {selectedPromo === promo.code ? "Selected" : "Select"}
+                        {selectedPromo === String(promo.id)
+                          ? "Selected"
+                          : "Select"}
                       </Button>
                     </div>
                     <AccordionContent>

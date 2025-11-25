@@ -87,7 +87,7 @@ export function LoginForm({
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
         <div className="space-y-4">
           <div>
-            <Label htmlFor="username">Username</Label>
+            <Label htmlFor="username">Username or Email</Label>
             <Input
               id="username"
               className="mt-1 bg-gray-200 text-black"

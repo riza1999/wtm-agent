@@ -35,6 +35,7 @@ export interface InvoiceData {
   total_before_promo?: number;
   invoice_number: string;
   invoice_date: string;
+  receipt: string;
 }
 
 export interface SubBookingDetail {

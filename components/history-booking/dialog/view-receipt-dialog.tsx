@@ -1,7 +1,6 @@
 "use client";
 
 import { HistoryBooking } from "@/app/(protected)/history-booking/types";
-import { Badge } from "@/components/ui/badge";
 import { Button } from "@/components/ui/button";
 import {
   Dialog,
@@ -18,13 +17,13 @@ import {
 } from "@tabler/icons-react";
 import Image from "next/image";
 import React, { useState } from "react";
-import { toast } from "sonner";
 
 interface ViewReceiptDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
   booking: HistoryBooking | null;
   invoiceIndex?: number;
+  receipt?: string;
 }
 
 const ViewReceiptDialog: React.FC<ViewReceiptDialogProps> = ({
@@ -32,6 +31,7 @@ const ViewReceiptDialog: React.FC<ViewReceiptDialogProps> = ({
   onOpenChange,
   booking,
   invoiceIndex,
+  receipt,
 }) => {
   const [currentReceiptIndex, setCurrentReceiptIndex] = useState(0);
 
@@ -43,9 +43,11 @@ const ViewReceiptDialog: React.FC<ViewReceiptDialogProps> = ({
   // Otherwise, show all receipts with navigation
   const allReceipts = booking.receipts || [];
   const receipts =
-    invoiceIndex !== undefined && allReceipts[invoiceIndex]
-      ? [allReceipts[invoiceIndex]]
-      : allReceipts;
+    receipt === undefined
+      ? invoiceIndex !== undefined && allReceipts[invoiceIndex]
+        ? [allReceipts[invoiceIndex]]
+        : allReceipts
+      : [receipt].filter((r) => r !== "");
   const hasReceipts = receipts.length > 0;
   const currentReceipt = receipts[currentReceiptIndex];
   const showNavigation = invoiceIndex === undefined && receipts.length > 1;

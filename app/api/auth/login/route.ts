@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     response.headers.set("set-cookie", refreshToken);
     response.headers.append(
       "set-cookie",
-      `access_token=${data.data.token}; Path=/; Max-Age=1740; HttpOnly`,
+      `access_token=${data.data.token}; Path=/; Max-Age=7190; HttpOnly`,
     );
   }
 

@@ -93,16 +93,6 @@ const HotelRoomCard = ({ bookingDetails, guests }: HotelRoomCardProps) => {
   // Determine if we should show placeholder
   const shouldShowPlaceholder = !bookingDetails.photo || imageError;
 
-  // Sample coupon data - in real app this would come from props or API
-  const couponDiscount = {
-    code: "3D2NIGHT15",
-    percentage: 15,
-    // amount: Math.floor(bookingDetails.totalPrice * 0.15),
-    amount: bookingDetails.price,
-  };
-
-  const discountedPrice = bookingDetails.price - couponDiscount.amount;
-
   const onRemove = async (id: string) => {
     startTransition(async () => {
       toast.promise(removeFromCart(id), {

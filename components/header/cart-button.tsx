@@ -37,18 +37,18 @@ export function CartButton({}: CartButtonProps) {
             <Button
               variant="ghost"
               size="icon"
-              className="relative size-10 cursor-pointer"
+              className="relative h-9 w-9 cursor-pointer sm:h-10 sm:w-10"
               disabled={isLoadingCart}
             >
               {isLoadingCart ? (
-                <div className="h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+                <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent sm:h-5 sm:w-5" />
               ) : (
-                <ShoppingCart className="size-5" />
+                <ShoppingCart className="h-4 w-4 sm:h-5 sm:w-5" />
               )}
               {cartItemCount > 0 && !isLoadingCart && !isErrorCart && (
                 <Badge
                   variant="destructive"
-                  className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs font-medium"
+                  className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full p-0 text-[10px] font-medium sm:-top-1 sm:-right-1 sm:h-5 sm:w-5 sm:text-xs"
                 >
                   {cartItemCount}
                 </Badge>
@@ -56,7 +56,7 @@ export function CartButton({}: CartButtonProps) {
               {isErrorCart && !isLoadingCart && (
                 <Badge
                   variant="destructive"
-                  className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs font-medium"
+                  className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full p-0 text-[10px] font-medium sm:-top-1 sm:-right-1 sm:h-5 sm:w-5 sm:text-xs"
                 >
                   !
                 </Badge>

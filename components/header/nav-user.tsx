@@ -71,17 +71,24 @@ export const NavUser = () => {
   };
 
   if (isLoadingProfile) {
-    return <div className="h-10 w-10 animate-pulse rounded-full bg-gray-300" />;
+    return (
+      <div className="h-9 w-9 animate-pulse rounded-full bg-gray-300 sm:h-10 sm:w-10" />
+    );
   }
 
   if (!isAuthenticated) {
     return (
-      <Button onClick={handleSignIn} variant={"ghost"}>
-        <Avatar className="h-8 w-8 rounded-lg">
+      <Button
+        onClick={handleSignIn}
+        variant={"ghost"}
+        size="sm"
+        className="h-9 gap-2 px-2 sm:h-10 sm:px-3"
+      >
+        <Avatar className="h-7 w-7 rounded-lg sm:h-8 sm:w-8">
           <AvatarImage src={""} alt={"Not logged In"} />
           <AvatarFallback className="rounded-lg"></AvatarFallback>
         </Avatar>
-        <div className="grid flex-1 text-left text-sm leading-tight">
+        <div className="grid-1 hidden text-left text-sm leading-tight sm:grid">
           <span className="truncate font-medium">Sign in</span>
         </div>
       </Button>
@@ -93,23 +100,30 @@ export const NavUser = () => {
       <DropdownMenuTrigger asChild>
         <Button
           variant={"ghost"}
-          size={"lg"}
-          className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
+          size={"sm"}
+          className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground h-9 gap-2 px-2 sm:h-10 sm:gap-2 sm:px-3 lg:gap-2"
         >
-          <Avatar className="h-8 w-8 rounded-lg">
+          <Avatar className="h-7 w-7 rounded-lg sm:h-8 sm:w-8">
             <AvatarImage src={user.avatar} alt={user.name} />
-            <AvatarFallback className="text-primary rounded-lg">
+            <AvatarFallback className="text-primary rounded-lg text-xs sm:text-sm">
               {user.name.charAt(0).toUpperCase()}
             </AvatarFallback>
           </Avatar>
-          <div className="grid flex-1 text-left text-sm leading-tight">
-            <span className="truncate font-medium">{user.name}</span>
-            <span className="truncate text-xs">{user.email}</span>
+          <div className="grid-1 hidden text-left text-sm leading-tight sm:grid">
+            <span className="truncate text-xs font-medium sm:text-sm">
+              {user.name}
+            </span>
+            <span className="truncate text-[10px] sm:text-xs">
+              {user.email}
+            </span>
           </div>
-          <ChevronsUpDown className="ml-auto size-4" />
+          <ChevronsUpDown className="ml-auto hidden h-4 w-4 sm:block" />
         </Button>
       </DropdownMenuTrigger>
-      <DropdownMenuContent className="w-(--radix-dropdown-menu-trigger-width) min-w-30 rounded-lg">
+      <DropdownMenuContent
+        className="w-(--radix-dropdown-menu-trigger-width) min-w-30 rounded-lg"
+        align="end"
+      >
         <DropdownMenuGroup>
           <DropdownMenuItem asChild>
             <Link href={"/settings"}>

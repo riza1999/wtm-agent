@@ -39,20 +39,20 @@ export function NotificationButton({}: NotificationButtonProps) {
         <Button
           variant="ghost"
           size="icon"
-          className="relative size-10"
+          className="relative h-9 w-9 sm:h-10 sm:w-10"
           disabled={isLoadingNotification}
         >
           {isLoadingNotification ? (
-            <div className="h-5 w-5 animate-spin rounded-full border-2 border-current border-t-transparent" />
+            <div className="h-4 w-4 animate-spin rounded-full border-2 border-current border-t-transparent sm:h-5 sm:w-5" />
           ) : (
-            <Bell className="size-5" />
+            <Bell className="h-4 w-4 sm:h-5 sm:w-5" />
           )}
           {unreadCount > 0 &&
             !isLoadingNotification &&
             !isErrorNotification && (
               <Badge
                 variant="destructive"
-                className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs font-medium"
+                className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full p-0 text-[10px] font-medium sm:-top-1 sm:-right-1 sm:h-5 sm:w-5 sm:text-xs"
               >
                 {unreadCount}
               </Badge>
@@ -60,14 +60,14 @@ export function NotificationButton({}: NotificationButtonProps) {
           {isErrorNotification && !isLoadingNotification && (
             <Badge
               variant="destructive"
-              className="absolute -top-1 -right-1 h-5 w-5 rounded-full p-0 text-xs font-medium"
+              className="absolute -top-0.5 -right-0.5 h-4 w-4 rounded-full p-0 text-[10px] font-medium sm:-top-1 sm:-right-1 sm:h-5 sm:w-5 sm:text-xs"
             >
               !
             </Badge>
           )}
         </Button>
       </PopoverTrigger>
-      <PopoverContent className="w-80 p-0" align="start">
+      <PopoverContent className="w-80 p-0" align="end">
         <div className="border-b p-4">
           <h3 className="text-lg font-semibold text-gray-900">Notification</h3>
         </div>

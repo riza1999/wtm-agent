@@ -28,6 +28,7 @@ export default async function HotelDetailPage({
           description={hotel.description}
           facilities={hotel.facilities}
           nearby={hotel.nearby_place}
+          social_media={hotel.social_media}
         />
       </section>
       {/* Room Card Section */}

@@ -89,8 +89,6 @@ const RoomDetailsDialog: React.FC<RoomDetailsDialogProps> = ({
   const [current, setCurrent] = useState(1);
   const [count, setCount] = useState(0);
 
-  console.log({ room });
-
   const handleSelect = useCallback(() => {
     if (!mainApi) return;
     setCurrent(mainApi.selectedScrollSnap() + 1);

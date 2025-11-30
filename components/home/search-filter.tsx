@@ -73,8 +73,14 @@ const SearchFilter = ({
     from: dateRangeParser.withDefault(today).withOptions({ shallow: false }),
     to: dateRangeParser.withDefault(tomorrow).withOptions({ shallow: false }),
   });
-  const [room, setRoom] = useQueryState("room", parseAsInteger.withDefault(1));
-  const [promo, setPromo] = useQueryState("promo_id", parseAsString);
+  const [room, setRoom] = useQueryState(
+    "room",
+    parseAsInteger.withDefault(1).withOptions({ shallow: false }),
+  );
+  const [promo, setPromo] = useQueryState(
+    "promo_id",
+    parseAsString.withOptions({ shallow: false }),
+  );
 
   // Check if any filter has been changed from default
   const hasActiveFilters = React.useMemo(() => {
@@ -398,7 +404,7 @@ const PromoButton = () => {
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedPromo, setSelectedPromo] = useQueryState(
     "promo_id",
-    parseAsString,
+    parseAsString.withOptions({ shallow: false }),
   );
 
   const {

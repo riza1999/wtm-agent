@@ -315,7 +315,7 @@ const GuestCounter = () => {
     parseAsInteger.withDefault(0).withOptions({ shallow: false }),
   );
 
-  const MAX_ADULTS_PER_ROOM = 2;
+  const MAX_ADULTS_PER_ROOM = 99;
 
   const incrementRoom = () => {
     setRoom((prev) => prev + 1);

@@ -26,6 +26,12 @@ export const getHotels = async ({
     page: searchParams.page || "1",
     from: searchParams.from || format(today, "yyyy-MM-dd"),
     to: searchParams.to || format(tomorrow, "yyyy-MM-dd"),
+    total_rooms: searchParams.total_rooms || "1",
+    total_quest:
+      String(
+        Number(searchParams.total_adults || "1") +
+          Number(searchParams.total_children || "0"),
+      ) || "1",
   };
 
   const queryString = buildQueryParams(searchParamsWithDefaults);

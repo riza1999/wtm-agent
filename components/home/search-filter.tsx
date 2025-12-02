@@ -74,12 +74,21 @@ const SearchFilter = ({
     to: dateRangeParser.withDefault(tomorrow).withOptions({ shallow: false }),
   });
   const [room, setRoom] = useQueryState(
-    "room",
+    "total_rooms",
     parseAsInteger.withDefault(1).withOptions({ shallow: false }),
   );
   const [promo, setPromo] = useQueryState(
     "promo_id",
     parseAsString.withOptions({ shallow: false }),
+  );
+
+  const [adult] = useQueryState(
+    "total_adults",
+    parseAsInteger.withDefault(1).withOptions({ shallow: false }),
+  );
+  const [children] = useQueryState(
+    "total_children",
+    parseAsInteger.withDefault(0).withOptions({ shallow: false }),
   );
 
   // Check if any filter has been changed from default
@@ -90,17 +99,35 @@ const SearchFilter = ({
       format(to, "yyyy-MM-dd") !== format(tomorrow, "yyyy-MM-dd");
     const isRoomChanged = room !== 1;
     const isPromoChanged = promo !== null;
+    const isAdultChanged = adult !== 1;
+    const isChildrenChanged = children !== 0;
 
     return (
-      isProvinceChanged || isDateChanged || isRoomChanged || isPromoChanged
+      isProvinceChanged ||
+      isDateChanged ||
+      isRoomChanged ||
+      isPromoChanged ||
+      isAdultChanged ||
+      isChildrenChanged
     );
-  }, [province, from, to, room, promo, today, tomorrow]);
+  }, [province, from, to, room, promo, adult, children, today, tomorrow]);
+
+  const [, setAdult] = useQueryState(
+    "total_adults",
+    parseAsInteger.withDefault(1).withOptions({ shallow: false }),
+  );
+  const [, setChildren] = useQueryState(
+    "total_children",
+    parseAsInteger.withDefault(0).withOptions({ shallow: false }),
+  );
 
   const handleReset = () => {
     setProvince(null);
     setDateRange({ from: today, to: tomorrow });
     setRoom(1);
     setPromo(null);
+    setAdult(1);
+    setChildren(0);
     toast.success("Filters reset", {
       description: "All search filters have been reset to default values.",
       duration: 3000,
@@ -275,9 +302,18 @@ const DateRangePicker = () => {
 };
 
 const GuestCounter = () => {
-  const [room, setRoom] = useQueryState("room", parseAsInteger.withDefault(1));
-  const [adult, setAdult] = useState(1);
-  const [children, setChildren] = useState(0);
+  const [room, setRoom] = useQueryState(
+    "total_rooms",
+    parseAsInteger.withDefault(1).withOptions({ shallow: false }),
+  );
+  const [adult, setAdult] = useQueryState(
+    "total_adults",
+    parseAsInteger.withDefault(1).withOptions({ shallow: false }),
+  );
+  const [children, setChildren] = useQueryState(
+    "total_children",
+    parseAsInteger.withDefault(0).withOptions({ shallow: false }),
+  );
 
   const MAX_ADULTS_PER_ROOM = 2;
 

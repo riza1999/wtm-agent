@@ -280,7 +280,7 @@ function BedroomTypeCard({
   filter_total_rooms: FilterTotalRooms[] | null;
 }) {
   const [bedRoomType, setBedRoomType] = useQueryState(
-    "total_rooms",
+    "total_bedrooms",
     parseAsNativeArrayOf(parseAsString)
       .withDefault([])
       .withOptions({ shallow: false }),

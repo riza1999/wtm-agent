@@ -26,7 +26,9 @@ const HomePage = async (props: HomePageProps) => {
     <div className="pb-8 sm:space-y-12 md:space-y-16">
       <div className="relative">
         <React.Suspense
-          fallback={<Skeleton className="h-[300px] w-full sm:h-[400px] md:h-[500px]" />}
+          fallback={
+            <Skeleton className="h-[300px] w-full sm:h-[400px] md:h-[500px]" />
+          }
         >
           <PromoBanner bannersPromise={bannersPromise} />
         </React.Suspense>
